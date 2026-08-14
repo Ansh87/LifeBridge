@@ -8,9 +8,18 @@
   # there are no production dependencies, so this makes install a no-op.
   NPM_FLAGS = "--omit=dev"
 
+  # Netlify's smart secret scanning matches the "AIza…" pattern and flags the
+  # Firebase web apiKey in js/firebase-config.js. That is a false positive: the
+  # Firebase web apiKey is a public project identifier, not a credential — it
+  # grants nothing on its own, and access is decided entirely by Firebase Auth
+  # and firestore.rules. It is meant to ship in client code.
+  #
+  # Scanning stays ON everywhere else, deliberately. GEMINI_API_KEY is a real
+  # secret, lives only in Netlify's environment variables, and is read
+  # server-side by netlify/functions/ai-proxy.js. If it ever leaked into any
+  # file in this repo, the build would still fail — which is the point.
+  SECRETS_SCAN_OMIT_PATHS = "js/firebase-config.js"
+  SECRETS_SCAN_SMART_DETECTION_OMIT_VALUES = "AIzaSyCp0ZUCx8ovvYu1EHqNjQcMJwC0i-FRK88"
+
 [functions]
   node_bundler = "esbuild"
-
-# The Gemini key is read from GEMINI_API_KEY in Netlify's environment at runtime
-# by netlify/functions/ai-proxy.js. It is never bundled into the client and
-# never appears in this repository.

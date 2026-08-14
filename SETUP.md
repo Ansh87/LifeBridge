@@ -208,7 +208,34 @@ so `netlify.toml` wins if the UI disagrees. Leave the build command empty —
 there is no build step, and `netlify.toml` already sets `NPM_FLAGS="--omit=dev"`
 so the rules-testing devDependencies never get installed during a deploy.
 
-### 3b. Confirm the Gemini key survived
+### 3b. About the "Exposed secrets detected" build failure
+
+If a deploy fails with **"Exposed secrets detected"** and a masked value
+starting `AIza…`, that is Netlify's smart secret scanning matching the Firebase
+web `apiKey` in `js/firebase-config.js`. It is a false positive — that key is a
+public project identifier, not a credential.
+
+`netlify.toml` already handles it, with two narrowly scoped settings:
+
+```toml
+SECRETS_SCAN_OMIT_PATHS = "js/firebase-config.js"
+SECRETS_SCAN_SMART_DETECTION_OMIT_VALUES = "<your Firebase apiKey>"
+```
+
+**Do not "fix" this with `SECRETS_SCAN_ENABLED = "false"`.** That switches off
+every protection site-wide. Your Gemini key also starts with `AIza`, so the
+scanner is the thing that would catch it if it ever landed in a committed file.
+Keeping scanning on everywhere except one known-public file is the whole point.
+
+Worth confirming before you suppress any secret warning, here or on a future
+project: click **Review exposed secrets** in the failed deploy and check which
+file and field it found. Both Firebase and Google AI Studio keys begin `AIza`,
+so the masked preview alone cannot tell them apart. It should be `apiKey` in
+`js/firebase-config.js`, and the `projectId` beside it should match your
+Firebase project. Anything under `netlify/` or in a `.env` file is a real leak:
+rotate that key in Google AI Studio immediately rather than safelisting it.
+
+### 3c. Confirm the Gemini key survived
 
 **Site configuration → Environment variables.** `GEMINI_API_KEY` should still
 be there. Linking a repo does not remove it, but check, because the AI planner
@@ -217,7 +244,7 @@ silently falls back to the offline framework without it.
 If it's missing, add it: key `GEMINI_API_KEY`, value your Google AI Studio key,
 scope "All deploy contexts."
 
-### 3c. Deploy
+### 3d. Deploy
 
 **Deploys → Trigger deploy → Deploy site.** Takes about a minute.
 
