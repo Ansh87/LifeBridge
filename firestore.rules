@@ -1,0 +1,151 @@
+rules_version = '2';
+
+// ============================================================================
+// LifeBridge — Firestore security rules
+//
+// Threat model: this database holds crisis narratives. A user may have written
+// "my husband is hitting me and I'm planning to leave on Thursday" into
+// situationText. That is the most sensitive class of data this project touches.
+// The rules below are therefore written deny-by-default, with no shared or
+// public collection anywhere in the tree.
+//
+// Guarantees:
+//   1. A document under /users/{uid}/** is readable and writable ONLY by a
+//      caller whose auth token uid == {uid}. There is no admin path, no
+//      "public" flag, and no query that can escape the owner's subtree.
+//   2. Collection-group queries against `plans` are denied, because no
+//      `match /{path=**}/plans/{planId}` rule exists. Only the owner-scoped
+//      path is granted. This is deliberate — do not add one.
+//   3. ownerUid is validated to equal the path uid on every write, so a stolen
+//      document body cannot be replayed into a different account.
+//   4. ownerUid and createdAt are immutable after creation.
+//   5. Size caps bound abuse (a plan cannot be used as free file storage).
+//
+// Deploy:  firebase deploy --only firestore:rules
+// ============================================================================
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ---------- helpers ----------
+    function signedIn() {
+      return request.auth != null && request.auth.uid != null;
+    }
+
+    function isOwner(uid) {
+      return signedIn() && request.auth.uid == uid;
+    }
+
+    function incoming() { return request.resource.data; }
+    function existing() { return resource.data; }
+
+    // A number in [0,100], or explicitly absent/null.
+    function optScore(d) {
+      return !('score' in d.keys())
+          || d.score == null
+          || (d.score is number && d.score >= 0 && d.score <= 100);
+    }
+
+    // ---------- user profile ----------
+    // One small document per account. Holds no crisis content — just the
+    // pointer to the active plan and the headline score, so a returning
+    // device can restore the home screen before loading any plan.
+    function validProfile(d, uid) {
+      return d.keys().hasOnly([
+               'ownerUid','schemaVersion','displayName','isAnonymous',
+               'currentPlanId','score','createdAt','updatedAt'
+             ])
+          && d.keys().hasAll(['ownerUid','schemaVersion','createdAt','updatedAt'])
+          && d.ownerUid == uid
+          && d.schemaVersion is int && d.schemaVersion == 1
+          && (d.displayName == null || (d.displayName is string && d.displayName.size() <= 120))
+          && d.isAnonymous is bool
+          && (d.currentPlanId == null || (d.currentPlanId is string && d.currentPlanId.size() <= 64))
+          && optScore(d)
+          && d.createdAt is timestamp
+          && d.updatedAt is timestamp;
+    }
+
+    match /users/{uid} {
+      allow get, list: if isOwner(uid);
+
+      allow create: if isOwner(uid)
+                    && validProfile(incoming(), uid);
+
+      allow update: if isOwner(uid)
+                    && validProfile(incoming(), uid)
+                    && incoming().ownerUid  == existing().ownerUid
+                    && incoming().createdAt == existing().createdAt;
+
+      allow delete: if isOwner(uid);
+
+      // ---------- saved recovery plans ----------
+      // The ACRE output plus the roadmap the user checks off. This is the
+      // sensitive collection.
+      function validPlan(d, owner) {
+        return d.keys().hasOnly([
+                 'ownerUid','schemaVersion','title','crisisType','crisisId',
+                 'pillarId','situationText','source','score','plan','roadmap',
+                 'progress','archived','createdAt','updatedAt'
+               ])
+            && d.keys().hasAll([
+                 'ownerUid','schemaVersion','title','plan','roadmap',
+                 'createdAt','updatedAt'
+               ])
+
+            // identity — cannot be forged into another account
+            && d.ownerUid == owner
+            && d.schemaVersion is int && d.schemaVersion == 1
+
+            // labels
+            && d.title is string && d.title.size() > 0 && d.title.size() <= 140
+            && (!('crisisType' in d.keys()) || d.crisisType == null
+                || (d.crisisType is string && d.crisisType.size() <= 140))
+            && (!('crisisId' in d.keys()) || d.crisisId == null
+                || (d.crisisId is string && d.crisisId.size() <= 40))
+            && (!('pillarId' in d.keys()) || d.pillarId == null
+                || (d.pillarId is string && d.pillarId.size() <= 40))
+
+            // the user's own words — capped, never unbounded
+            && (!('situationText' in d.keys()) || d.situationText == null
+                || (d.situationText is string && d.situationText.size() <= 4000))
+
+            // provenance: was this the live planner or the offline framework?
+            && (!('source' in d.keys())
+                || d.source in ['ai','fallback'])
+
+            && optScore(d)
+
+            // payloads
+            && d.plan is map
+            && d.roadmap is list && d.roadmap.size() <= 60
+            && (!('progress' in d.keys()) || d.progress is map)
+            && (!('archived' in d.keys()) || d.archived is bool)
+
+            && d.createdAt is timestamp
+            && d.updatedAt is timestamp;
+      }
+
+      match /plans/{planId} {
+        allow get, list: if isOwner(uid);
+
+        allow create: if isOwner(uid)
+                      && validPlan(incoming(), uid);
+
+        allow update: if isOwner(uid)
+                      && validPlan(incoming(), uid)
+                      // immutable identity + creation stamp
+                      && incoming().ownerUid  == existing().ownerUid
+                      && incoming().createdAt == existing().createdAt;
+
+        allow delete: if isOwner(uid);
+      }
+    }
+
+    // ---------- deny everything else, explicitly ----------
+    // Any collection added later starts locked until a rule is written for it.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

@@ -1,0 +1,30 @@
+# --- secrets: never commit ---
+.env
+.env.*
+!.env.example
+*.key
+*.pem
+serviceAccount*.json
+firebase-adminsdk*.json
+
+# --- Netlify ---
+.netlify/
+netlify/functions/**/node_modules/
+
+# --- tooling ---
+node_modules/
+npm-debug.log*
+yarn-error.log*
+.firebase/
+firebase-debug.log*
+firestore-debug.log*
+ui-debug.log*
+*.jar
+
+# --- editors / OS ---
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/
+.idea/
+*.swp

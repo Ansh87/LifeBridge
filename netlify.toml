@@ -1,0 +1,16 @@
+[build]
+  publish = "."
+  functions = "netlify/functions"
+
+[build.environment]
+  # package.json exists only for the local Firestore rules tests. Its
+  # devDependencies (firebase-tools et al.) must not be pulled into the deploy —
+  # there are no production dependencies, so this makes install a no-op.
+  NPM_FLAGS = "--omit=dev"
+
+[functions]
+  node_bundler = "esbuild"
+
+# The Gemini key is read from GEMINI_API_KEY in Netlify's environment at runtime
+# by netlify/functions/ai-proxy.js. It is never bundled into the client and
+# never appears in this repository.
