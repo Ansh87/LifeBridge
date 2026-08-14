@@ -4,21 +4,23 @@
 
 [build.environment]
   # package.json exists only for the local Firestore rules tests. Its
-  # devDependencies (firebase-tools et al.) must not be pulled into the deploy —
+  # devDependencies (firebase-tools et al.) must not be pulled into the deploy,
   # there are no production dependencies, so this makes install a no-op.
   NPM_FLAGS = "--omit=dev"
 
   # Netlify's smart secret scanning matches the "AIza…" pattern and flags the
   # Firebase web apiKey in js/firebase-config.js. That is a false positive: the
-  # Firebase web apiKey is a public project identifier, not a credential — it
+  # Firebase web apiKey is a public project identifier, not a credential, it
   # grants nothing on its own, and access is decided entirely by Firebase Auth
   # and firestore.rules. It is meant to ship in client code.
   #
   # Scanning stays ON everywhere else, deliberately. GEMINI_API_KEY is a real
   # secret, lives only in Netlify's environment variables, and is read
   # server-side by netlify/functions/ai-proxy.js. If it ever leaked into any
-  # file in this repo, the build would still fail — which is the point.
-  SECRETS_SCAN_OMIT_PATHS = "js/firebase-config.js"
+  # file in this repo, the build would still fail, which is the point.
+  # netlify.toml is listed too because the safelisted value below is itself an
+  # "AIza..." string sitting in a committed file.
+  SECRETS_SCAN_OMIT_PATHS = "js/firebase-config.js,netlify.toml"
   SECRETS_SCAN_SMART_DETECTION_OMIT_VALUES = "AIzaSyCp0ZUCx8ovvYu1EHqNjQcMJwC0i-FRK88"
 
 [functions]

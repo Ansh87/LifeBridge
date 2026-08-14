@@ -1,4 +1,4 @@
-# LifeBridge — setup
+# LifeBridge, setup
 
 Three parts, in this order. Firebase first, because step 2 commits the config
 that step 1 gives you, and step 3 deploys what step 2 pushed.
@@ -37,7 +37,7 @@ project comfortably.
 
 1. On the project overview page, click the **`</>`** (Web) icon.
 2. App nickname: `LifeBridge Web`. **Do not** tick "Also set up Firebase
-   Hosting" — Netlify is doing the hosting.
+   Hosting", Netlify is doing the hosting.
 3. Register app.
 4. You'll be shown a `firebaseConfig` object. **Copy it and keep the tab open.**
    Step 1f needs it. (If you lose it: gear icon → Project settings → General →
@@ -50,18 +50,42 @@ method** tab.
 
 - **Anonymous** → click it → toggle **Enable** → Save.
   This is the frictionless demo login. A judge can try the whole app in one tap.
-- **Google** → click it → toggle **Enable**, then set two fields before saving:
-  - **Project public-facing name** → change it to `LifeBridge`. This is the
-    string Google shows in the sign-in popup: *"Choose an account to continue
-    to \_\_\_\_."* Left at the default it reads "continue to lifebridge-4f2a1",
-    which looks like a misconfigured dev project. It is only a display label,
-    so changing it breaks nothing, and it can be edited later under this same
-    panel or in Google Cloud Console → APIs & Services → OAuth consent screen.
-    (The project *ID* is permanent; that's a different thing.)
-  - **Project support email** → this also appears on the consent screen, so
-    pick the address you'd want a user to actually see.
+- **Google**, click it, toggle **Enable**, then set two fields before saving:
+  - **Project public-facing name**, change it to `LifeBridge`.
+  - **Project support email**, this appears on the consent screen, so pick the
+    address you would want a user to actually see.
 
   Save.
+
+#### If the sign-in popup still says `lifebridge-xxxxx.firebaseapp.com`
+
+That is Google's OAuth consent screen falling back to the auth domain because
+no **App name** is set on the OAuth branding record, or because the app has not
+been brand verified. Firebase's "public-facing name" writes to the same record,
+but the change is not always immediate and the name only renders once branding
+is accepted.
+
+To fix it properly:
+
+1. Go to <https://console.cloud.google.com/auth/branding> and select your
+   Firebase project (same project, the Google Cloud side of it).
+2. Set **App name** to `LifeBridge`, set the user support email, and add a logo
+   if you have one. Save.
+3. Under **Audience**, check the publishing status. In **Testing** the name
+   shows only for accounts you add as test users, which is no good for a public
+   demo. **Published** (External) is what you want, and with only the basic
+   `email`, `profile` and `openid` scopes there is no sensitive-scope review to
+   pass.
+4. To display a custom name and logo on a Published External app, Google
+   requires **brand verification**: you verify ownership of the authorized
+   domain in Search Console, then submit from the Branding page. For a simple
+   app on non-sensitive scopes the automated check often clears in minutes.
+5. Sign-in popups are cached hard. Test in a fresh private window before
+   concluding it did not work.
+
+Worth being realistic about the trade: this is cosmetic. Sign-in works either
+way, and if verification has not cleared before your deadline, the screen says
+your Firebase domain instead of your app name. Nothing is broken.
 
 Both providers must read **Enabled** before the app's sign-in buttons will work.
 
@@ -87,7 +111,7 @@ Left sidebar → **Build → Firestore Database → Create database**.
 1. Location: pick the region nearest your users. `nam5 (us-central)` is the
    usual US choice. **This cannot be changed later.**
 2. Start in **production mode**, which is locked down by default. Never start
-   in test mode — that leaves the database world-readable for 30 days.
+   in test mode. That leaves the database world-readable for 30 days.
 3. Create.
 
 Then open the **Rules** tab. Delete everything in the editor and paste the
@@ -134,7 +158,7 @@ expected. It works on `localhost` and on the live site.)
 
 Your repo already exists at <https://github.com/Ansh87/LifeBridge>.
 
-Open a terminal and `cd` into the `lifebridge-deploy` folder — the one
+Open a terminal and `cd` into the `lifebridge-deploy` folder, the one
 containing `index.html`. Lines starting with `#` are comments; don't type
 those.
 
@@ -204,7 +228,7 @@ Settings:
 | Functions directory | `netlify/functions` |
 
 The publish and functions directories are already declared in `netlify.toml`,
-so `netlify.toml` wins if the UI disagrees. Leave the build command empty —
+so `netlify.toml` wins if the UI disagrees. Leave the build command empty,
 there is no build step, and `netlify.toml` already sets `NPM_FLAGS="--omit=dev"`
 so the rules-testing devDependencies never get installed during a deploy.
 
@@ -212,7 +236,7 @@ so the rules-testing devDependencies never get installed during a deploy.
 
 If a deploy fails with **"Exposed secrets detected"** and a masked value
 starting `AIza…`, that is Netlify's smart secret scanning matching the Firebase
-web `apiKey` in `js/firebase-config.js`. It is a false positive — that key is a
+web `apiKey` in `js/firebase-config.js`. It is a false positive, that key is a
 public project identifier, not a credential.
 
 `netlify.toml` already handles it, with two narrowly scoped settings:
@@ -264,7 +288,7 @@ On <https://lifebridge-ai-prototype.netlify.app>:
 
 | Step | What should happen |
 |---|---|
-| Load the page | A **Sign in** button appears in the top bar. If it doesn't, the deployed config still has placeholders. |
+| Load the page | The **sign-in screen** appears first, with Guest and Google. If the app opens straight to the home screen instead, the deployed config still has placeholders, or Firebase could not load, and the gate correctly failed open. |
 | Sign in → **Continue as a guest** | Top bar becomes **My plans** plus a "Guest" chip. No popup, no email. |
 | Build a plan → **Save this plan** | The button becomes a green "Saved to your account". |
 | **My plans** | The plan appears as a card with its progress bar. |
@@ -274,6 +298,32 @@ On <https://lifebridge-ai-prototype.netlify.app>:
 
 In Firebase Console → Firestore → Data you should now see
 `users / {some-uid} / plans / {some-id}`.
+
+### Is the AI actually configured? One URL tells you
+
+Open this in a browser:
+
+```
+https://lifebridge-ai-prototype.netlify.app/.netlify/functions/ai-proxy
+```
+
+The function answers a plain GET with a health report:
+
+```json
+{ "ok": true, "configured": true, "keyLength": 39, "models": [ ... ] }
+```
+
+`configured: false` means `GEMINI_API_KEY` is not set on that deploy, which is
+the single most common cause of "Planner offline" and of the assistant replying
+"I'm having trouble reaching the assistant right now." It reports a boolean and
+a length only, never the key itself.
+
+If `configured` is `true` but the planner still fails, the cause is a quota or a
+model problem. Open the browser console, trigger it again, and look for
+`[LifeBridge] AI proxy attempts` which lists each model tried, the HTTP status
+it returned, and the reason. `429` on every model means the free tier quota is
+exhausted and will reset on a rolling window. `404` means that model ID is
+retired and should be replaced in `netlify/functions/ai-proxy.js`.
 
 ### If something's wrong
 

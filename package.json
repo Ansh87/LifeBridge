@@ -2,7 +2,7 @@
   "name": "lifebridge",
   "version": "1.1.0",
   "private": true,
-  "description": "LifeBridge — AI-powered crisis recovery. Static site on Netlify, Gemini via a serverless proxy, Firebase for auth and saved plans.",
+  "description": "LifeBridge, AI-powered crisis recovery. Static site on Netlify, Gemini via a serverless proxy, Firebase for auth and saved plans.",
   "license": "MIT",
   "scripts": {
     "dev": "npx --yes serve . -l 5173",

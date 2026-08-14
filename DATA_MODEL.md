@@ -1,4 +1,4 @@
-# LifeBridge — Firestore data model
+# LifeBridge, Firestore data model
 
 Written down before the code was, because this collection holds crisis
 narratives. A `situationText` field can contain *"my husband is hitting me and
@@ -18,14 +18,14 @@ users/{uid}/plans/{planId}           ← one document per saved recovery plan
 Plans are **nested under the owner**, not stored in a flat top-level
 `plans` collection with an `ownerUid` filter. That choice is the whole security
 design: ownership becomes a property of the *path*, so the rule is
-`request.auth.uid == {uid}` and there is no query that can be written — by the
-app, by a bug, or by someone poking at the SDK from the console — that reaches
+`request.auth.uid == {uid}` and there is no query that can be written, by the
+app, by a bug, or by someone poking at the SDK from the console, that reaches
 across accounts. A flat collection would make every read depend on remembering
 to attach the right `where()` clause.
 
 ---
 
-## `users/{uid}` — profile
+## `users/{uid}`, profile
 
 Deliberately tiny, and holds **no crisis content**. Its only job is to let a
 returning device restore the home screen before any plan is fetched.
@@ -36,28 +36,28 @@ returning device restore the home screen before any plan is fetched.
 | `schemaVersion` | int | Currently `1`. Present so a future migration has something to branch on. |
 | `displayName` | string \| null | From Google. `null` for guests. ≤ 120 chars. |
 | `isAnonymous` | bool | `true` while the account is a guest session. |
-| `currentPlanId` | string \| null | The plan this user was last working on — powers cross-device resume. |
-| `score` | number \| null | 0–100 LifeBridge Score. Denormalized so the bridge draws without loading a plan. |
+| `currentPlanId` | string \| null | The plan this user was last working on, powers cross-device resume. |
+| `score` | number \| null | 0-100 LifeBridge Score. Denormalized so the bridge draws without loading a plan. |
 | `createdAt` | timestamp | Server-set. Immutable after creation. |
 | `updatedAt` | timestamp | Server-set on every write. |
 
 ---
 
-## `users/{uid}/plans/{planId}` — a saved recovery plan
+## `users/{uid}/plans/{planId}`, a saved recovery plan
 
 | Field | Type | Notes |
 |---|---|---|
-| `ownerUid` | string | Equals `{uid}`. Immutable. Defence in depth — a document body copied out of one account cannot be replayed into another. |
+| `ownerUid` | string | Equals `{uid}`. Immutable. Defence in depth, a document body copied out of one account cannot be replayed into another. |
 | `schemaVersion` | int | `1`. |
-| `title` | string | Card heading. 1–140 chars. |
+| `title` | string | Card heading. 1-140 chars. |
 | `crisisType` | string \| null | What ACRE decided this is. ≤ 140. |
 | `crisisId` | string \| null | One of the 14 crisis module ids (`jobloss`, `dv`, `eviction`, …), or `null` for an open-ended entry. |
 | `pillarId` | string \| null | One of the 6 pillars (`family`, `housing`, `finance`, `health`, `education`, `legal`). |
 | `situationText` | string \| null | **The user's own words.** Capped at 4000 chars. The most sensitive field in the database. |
 | `source` | `"ai"` \| `"fallback"` | Whether the live planner produced this or the offline rule-based framework did. Kept so a plan built during an outage is labelled honestly when reopened. |
-| `score` | number \| null | 0–100 at time of last write. |
-| `plan` | map | The ACRE payload — see below. |
-| `roadmap` | array | ≤ 60 steps — see below. |
+| `score` | number \| null | 0-100 at time of last write. |
+| `plan` | map | The ACRE payload, see below. |
+| `roadmap` | array | ≤ 60 steps, see below. |
 | `progress` | map | `{done, total, pct}`. Denormalized so the plan list renders from one read instead of counting steps client-side. |
 | `archived` | bool | Reserved. Always `false` today. |
 | `createdAt` | timestamp | Server-set. Immutable. |
@@ -89,7 +89,7 @@ never bloat or corrupt a stored document.
 [{ "label": "Call 211", "detail": "Today", "done": false, "doneAt": null }]
 ```
 
-`done` is the field that changes most often in the whole app — it is what a
+`done` is the field that changes most often in the whole app. It is what a
 user touches while recovering. Writes are debounced 700 ms in
 `syncRoadmap()` so a burst of checkbox taps costs one write, not six.
 
@@ -105,8 +105,8 @@ annotated source.
 Two things worth calling out:
 
 - **Collection-group queries are denied.** There is no
-  `match /{path=**}/plans/{planId}` rule, so `collectionGroup("plans")` — the
-  one query shape that could otherwise span accounts — fails for everyone.
+  `match /{path=**}/plans/{planId}` rule, so `collectionGroup("plans")`, the
+  one query shape that could otherwise span accounts, fails for everyone.
   Do not add one.
 - **`ownerUid` and `createdAt` are immutable.** Updates must leave both equal
   to their existing values, so an account cannot rewrite provenance.
@@ -121,12 +121,12 @@ Honest about where the boundary is:
 - Rules cannot count documents, so there is no server-side cap on plans per
   user. The client lists at most 50.
 - Data is encrypted at rest by Google and in transit by TLS, but it is not
-  end-to-end encrypted — a project owner with console access can read it.
+  end-to-end encrypted, a project owner with console access can read it.
   Worth stating plainly rather than implying otherwise.
 
 ## Guest sessions
 
-A guest is a real Firebase user with a real uid and `isAnonymous: true` — the
+A guest is a real Firebase user with a real uid and `isAnonymous: true`, the
 same rules apply, so guest data is just as isolated. What a guest lacks is a
 way to *prove* they are the same person from another browser. Linking a Google
 account keeps the uid and therefore keeps every document; if that Google

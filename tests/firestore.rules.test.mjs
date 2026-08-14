@@ -1,5 +1,5 @@
 /**
- * LifeBridge — Firestore security rules test suite
+ * LifeBridge, Firestore security rules test suite
  *
  * Proves the claim in DATA_MODEL.md rather than asserting it: that a signed-in
  * user can reach their own plans and nothing else.
@@ -8,7 +8,7 @@
  *     npm install
  *     npm run test:rules
  *
- * That starts the Firestore emulator against firestore.rules — no real project,
+ * That starts the Firestore emulator against firestore.rules, no real project,
  * no real data, nothing billed. Requires Java 11+ (the emulator is a JVM
  * process); `java -version` will tell you.
  */

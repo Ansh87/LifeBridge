@@ -1,7 +1,7 @@
 rules_version = '2';
 
 // ============================================================================
-// LifeBridge — Firestore security rules
+// LifeBridge, Firestore security rules
 //
 // Threat model: this database holds crisis narratives. A user may have written
 // "my husband is hitting me and I'm planning to leave on Thursday" into
@@ -15,7 +15,7 @@ rules_version = '2';
 //      "public" flag, and no query that can escape the owner's subtree.
 //   2. Collection-group queries against `plans` are denied, because no
 //      `match /{path=**}/plans/{planId}` rule exists. Only the owner-scoped
-//      path is granted. This is deliberate — do not add one.
+//      path is granted. This is deliberate, do not add one.
 //   3. ownerUid is validated to equal the path uid on every write, so a stolen
 //      document body cannot be replayed into a different account.
 //   4. ownerUid and createdAt are immutable after creation.
@@ -47,7 +47,7 @@ service cloud.firestore {
     }
 
     // ---------- user profile ----------
-    // One small document per account. Holds no crisis content — just the
+    // One small document per account. Holds no crisis content, just the
     // pointer to the active plan and the headline score, so a returning
     // device can restore the home screen before loading any plan.
     function validProfile(d, uid) {
@@ -93,7 +93,7 @@ service cloud.firestore {
                  'createdAt','updatedAt'
                ])
 
-            // identity — cannot be forged into another account
+            // identity, cannot be forged into another account
             && d.ownerUid == owner
             && d.schemaVersion is int && d.schemaVersion == 1
 
@@ -106,7 +106,7 @@ service cloud.firestore {
             && (!('pillarId' in d.keys()) || d.pillarId == null
                 || (d.pillarId is string && d.pillarId.size() <= 40))
 
-            // the user's own words — capped, never unbounded
+            // the user's own words, capped, never unbounded
             && (!('situationText' in d.keys()) || d.situationText == null
                 || (d.situationText is string && d.situationText.size() <= 4000))
 

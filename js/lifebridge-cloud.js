@@ -1,15 +1,15 @@
 // ============================================================================
-// LifeBridge — cloud layer (Firebase Auth + Cloud Firestore)
+// LifeBridge, cloud layer (Firebase Auth + Cloud Firestore)
 // ============================================================================
 //
 // Scope, deliberately narrow:
-//   Firebase does two things here — it says who the user is, and it stores
+//   Firebase does two things here, it says who the user is, and it stores
 //   their saved plans. It never touches Gemini. Every AI call still goes to
 //   /.netlify/functions/ai-proxy, where GEMINI_API_KEY lives server-side.
 //
 // This file is an ES module and is therefore deferred. The main application
 // script in index.html is a classic script that runs first and renders from
-// localStorage, so LifeBridge is fully usable before this module resolves —
+// localStorage, so LifeBridge is fully usable before this module resolves,
 // and stays fully usable if it never does (offline, blocked, unconfigured).
 // Communication happens one way: this module publishes `window.LBCloud` and
 // fires a `lb:cloud` event; the app listens and re-renders.
@@ -47,7 +47,7 @@ if (!firebaseConfigured) {
   publish({
     status: "disabled",
     enabled: false,
-    error: "Firebase is not configured yet — running in local-only mode.",
+    error: "Firebase is not configured yet, running in local-only mode.",
   });
   // Stub the API so index.html never needs to null-check individual methods.
   Object.assign(LBCloud, unavailableApi("Firebase is not configured yet."));
@@ -102,7 +102,7 @@ async function boot() {
   const auth = getAuth(app);
   const db = getFirestore(app);
 
-  // Keep the guest session across reloads — a guest who closes the tab mid
+  // Keep the guest session across reloads, a guest who closes the tab mid
   // crisis should come back to their plan, not to a blank slate.
   try {
     await setPersistence(auth, browserLocalPersistence);
@@ -136,7 +136,7 @@ async function boot() {
   /* -------------------------------------------------------- profile doc */
   // firestore.rules requires a profile write to carry ownerUid, schemaVersion
   // and createdAt. A merge write onto a document that does not exist yet would
-  // carry none of them and be rejected — so every profile write funnels through
+  // carry none of them and be rejected, so every profile write funnels through
   // this guard first. It matters because "save my plan" can fire the instant
   // sign-in resolves, before onAuthStateChanged has created the profile.
   let ensuredUid = null;
@@ -237,7 +237,7 @@ async function boot() {
     return ref.id;
   }
 
-  // updateDoc merges, so createdAt and ownerUid stay untouched — which is what
+  // updateDoc merges, so createdAt and ownerUid stay untouched, which is what
   // the immutability checks in firestore.rules require.
   async function updatePlan(id, patch) {
     const uid = requireUid();
@@ -296,7 +296,7 @@ async function boot() {
   // Collision path: the Google account already exists as its own Firebase user.
   // Linking is impossible, so we buffer the guest's plans in memory FIRST,
   // sign in as the real account, then re-create the buffered plans under the
-  // new uid. Reading has to happen before the switch — after it, the old uid's
+  // new uid. Reading has to happen before the switch, after it, the old uid's
   // documents are unreachable by design (that is the security rule working).
   async function signInGoogle() {
     const current = auth.currentUser;
@@ -323,7 +323,7 @@ async function boot() {
 
     try {
       const { user } = await linkWithPopup(current, provider);
-      return shapeUser(user); // same uid — plans already belong to it
+      return shapeUser(user); // same uid, plans already belong to it
     } catch (e) {
       const code = e?.code || "";
 
@@ -510,7 +510,7 @@ function humanError(e) {
   const c = e?.code || "";
   const map = {
     "auth/popup-closed-by-user": "Sign-in window closed before finishing.",
-    "auth/network-request-failed": "Network problem — check your connection and try again.",
+    "auth/network-request-failed": "Network problem, check your connection and try again.",
     "auth/unauthorized-domain":
       "This domain isn't authorized in Firebase. Add it under Authentication → Settings → Authorized domains.",
     "auth/operation-not-allowed":
