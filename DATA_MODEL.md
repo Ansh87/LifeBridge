@@ -63,31 +63,69 @@ returning device restore the home screen before any plan is fetched.
 | `createdAt` | timestamp | Server-set. Immutable. |
 | `updatedAt` | timestamp | Server-set. Sorts the plan list. |
 
-### `plan` (the ACRE payload)
+### `plan` (the Recovery Engine payload)
 
-Mirrors the JSON the model returns, so nothing has to be reshaped on the way
-in or out. `js/lifebridge-cloud.js → sanitizePlan()` drops unknown keys and
+Mirrors the JSON the engine produces, so nothing has to be reshaped on the way
+in or out. `js/lifebridge-cloud.js -> sanitizePlan()` drops unknown keys and
 truncates every string before the write, so a malformed model response can
 never bloat or corrupt a stored document.
 
 ```jsonc
 {
-  "crisisType":      "Job loss",
-  "acknowledgement": "…",                                    // ≤ 1200
-  "immediateNeeds":  [{ "title": "…", "detail": "…" }],       // ≤ 24
-  "risks":           [{ "dimension": "Financial", "level": 70, "note": "…" }],
-  "actions":         [{ "when": "Today", "task": "…" }],      // ≤ 30
-  "documents":       ["Separation letter", "…"],              // ≤ 30
-  "helpers":         [{ "who": "…", "how": "…" }],
-  "secondaryRisks":  [{ "risk": "…", "prevent": "…" }]
+  "engineVersion":   2,
+  "crisisType":      "Loss of a spouse",
+  "acknowledgement": "...",
+  "isSample":        false,                                   // true for the demo scenario
+  "priorities": [                                             // exactly 3, most urgent first
+    { "title": "Protect your housing", "urgency": "High",
+      "why": "...", "nextStep": "...", "dimension": "housing" }
+  ],
+  "dimensions": [                                             // all six, always
+    { "id": "housing", "score": 34, "assessed": true, "why": "..." }
+  ],
+  "actions": [                                                // 4 to 8
+    { "when": "today", "task": "...", "why": "...", "dimension": "financial" }
+  ],
+  "documents":    ["Death certificate, several certified copies"],
+  "helpers":      [{ "who": "...", "what": "...", "how": "..." }],
+  "risksToWatch": [{ "risk": "...", "why": "...", "prevent": "..." }]
 }
 ```
+
+**Scores are stability, never risk.** 100 is fully stable, 0 is in crisis, and
+that direction holds everywhere in the codebase. The first version stored
+`risks[{dimension, level}]` where a *higher* number was *worse*. Mixing the two
+directions is the easiest available way to ship a bug that tells someone in
+crisis the opposite of the truth, so the inversion happens once, in
+`normalizePlan()`, and nowhere else.
+
+The six dimension ids are fixed: `housing`, `financial`, `food`, `health`,
+`family`, `safety`. They are not model-chosen. Letting the model name its own
+axes made two people's scores incomparable and the result impossible to explain.
+
+#### Reading a plan saved by an earlier version
+
+`normalizePlan()` in `js/lifebridge-engine.js` accepts both shapes. A v1 plan
+has its `risks` inverted into stability, its `secondaryRisks` renamed to
+`risksToWatch`, and priorities derived from its weakest areas, so a plan saved
+before this engine existed still opens into the current experience rather than
+a half-empty screen. Legacy fields are preserved on re-save rather than
+stripped. `tests/` covers this path.
 
 ### `roadmap`
 
 ```jsonc
-[{ "label": "Call 211", "detail": "Today", "done": false, "doneAt": null }]
+[{ "label": "Call 211", "detail": "why it matters",
+   "when": "today",            // now | today | week | month
+   "dimension": "housing",     // the one area this action supports
+   "done": false, "doneAt": null }]
 ```
+
+`dimension` is what connects the roadmap back to the score. Completing an
+action raises only the area it supports, and completing every action linked to
+an area closes at most **half** the remaining gap to 100. A checkbox is
+evidence of progress, not proof of stability, and a score that reached 100 from
+checkboxes alone would be dishonest to someone still in a hard situation.
 
 `done` is the field that changes most often in the whole app. It is what a
 user touches while recovering. Writes are debounced 700 ms in

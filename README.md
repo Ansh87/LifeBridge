@@ -3,7 +3,7 @@
 **Crisis Assistance, Recovery & Empowerment, an AI-powered platform that helps people navigate life's hardest moments.**
 
 Live demo: https://lifebridge-ai-prototype.netlify.app
-Built for HackSocial 2026 (Social Good / AI-ML track) by Ansh Saini, South Brunswick High School.
+A student-developed decision-support prototype for crisis recovery.
 
 ---
 
@@ -18,15 +18,16 @@ LifeBridge started from a simple idea: build the thing a good case worker does i
 Describe a life-changing event in plain language. LifeBridge:
 
 1. **Detects the crisis** and what is actually at stake.
-2. **Scores risk across multiple dimensions** (financial, housing, health, safety, and more) instead of a single number.
+2. **Assesses stability across six fixed areas** (housing, financial, food, health, family/education, safety) instead of a single number, and explains what drove each one.
 3. **Builds a personalized recovery plan** with today / this week / this month steps, documents to gather, and who can help.
-4. **Predicts secondary risks**, the setbacks that tend to follow, and how to get ahead of them.
-5. **Connects to real resources**: accurate US crisis hotlines, plus nearby social services pulled live from OpenStreetMap.
-6. **Tracks progress** through a Recovery Roadmap. As you check off steps, your **LifeBridge Score** rises and a bridge visual completes from crisis (0) to stable (100).
+4. **Names the top three priorities**, each with why it matters and a concrete next step.
+5. **Flags risks to watch**, the setbacks that tend to follow, worded as possibilities rather than predictions.
+6. **Connects to real resources**: accurate US crisis hotlines, plus nearby social services pulled live from OpenStreetMap.
+7. **Tracks recovery** through a roadmap grouped by urgency. Each action is linked to the area it supports, so completing it moves that area rather than inflating the whole score.
 
 It spans six areas of life: Family & Personal, Housing & Basic Needs, Financial & Employment, Medical & Mental Health, Education & Youth, and Legal & Civic, 14 specific situations in all.
 
-7. **Saves and follows you.** Sign in as a guest in one tap, or with Google, and your plans and roadmap progress persist across devices, because recovery takes weeks, not one browser session.
+8. **Saves and follows you.** Sign in as a guest in one tap, or with Google, and your plans and roadmap progress persist across devices, because recovery takes weeks, not one browser session.
 
 ## Accounts and saved plans
 
@@ -42,9 +43,20 @@ The schema and the reasoning behind it are in **[DATA_MODEL.md](DATA_MODEL.md)**
 
 **Setup is in [SETUP.md](SETUP.md)**, GitHub, the Firebase Console walkthrough, and where the config goes.
 
-## The engine: ACRE
+## The engine: the LifeBridge Recovery Engine
 
-At the core is **ACRE, the Adaptive Crisis Recovery Engine**. It is model-agnostic and pillar-agnostic: one reasoning core (crisis detection to multi-dimensional risk profile to recovery plan to secondary-risk prediction) serves every situation, with per-situation content authored as structured data. This is the novel, patent-oriented component of the project.
+At the core is the **LifeBridge Recovery Engine** (ACRE, the Adaptive Crisis Recovery Engine), in `js/lifebridge-engine.js`. It is model-agnostic and pillar-agnostic: one reasoning core (crisis detection to multi-dimensional risk profile to recovery plan to secondary-risk prediction) serves every situation, with per-situation content authored as structured data. It runs the same six stages for every situation, and that vocabulary is used consistently across the whole product:
+
+    Understand -> Assess -> Prioritize -> Plan -> Connect -> Recover
+
+Two design choices carry most of the weight:
+
+- **Six fixed stability dimensions**, not model-invented axes: Housing, Financial, Food & Essentials, Health & Wellbeing, Family / Education, Personal Safety. Letting the model name its own axes made two people's scores incomparable and the result impossible to explain.
+- **Scores are stability, never risk.** Higher is always better, everywhere in the codebase. Mixing the two directions was the easiest available way to ship a bug that tells someone in crisis the opposite of the truth.
+
+Each roadmap action is linked to the one dimension it supports, so completing it moves that area rather than inflating the whole score. Completing every action linked to a dimension closes at most half the remaining gap to 100, because a checkbox is evidence of progress, not proof of stability.
+
+This is the novel component of the project.
 
 ## How it's built
 
@@ -55,7 +67,8 @@ At the core is **ACRE, the Adaptive Crisis Recovery Engine**. It is model-agnost
 - **Deploy:** Netlify (static site + serverless function), env var GEMINI_API_KEY.
 
 ```
-index.html                      the app, UI, ACRE client, roadmap, account screens
+index.html                      the app: UI, screens, rendering
+js/lifebridge-engine.js         the Recovery Engine: dimensions, scoring, prompts, demo, resources
 js/firebase-config.js           the only file you edit after creating a Firebase project
 js/lifebridge-cloud.js          auth + Firestore layer (ES module, degrades to local-only)
 netlify/functions/ai-proxy.js   Gemini proxy, the only place GEMINI_API_KEY is read

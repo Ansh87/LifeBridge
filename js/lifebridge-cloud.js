@@ -202,6 +202,8 @@ async function boot() {
     const roadmap = (input.roadmap || []).slice(0, 60).map((s) => ({
       label: String(s.label || "").slice(0, 300),
       detail: String(s.detail || "").slice(0, 300),
+      when: String(s.when || "week").slice(0, 12),
+      dimension: String(s.dimension || "").slice(0, 20),
       done: !!s.done,
       doneAt: s.doneAt ?? null,
     }));
@@ -247,6 +249,8 @@ async function boot() {
       const roadmap = patch.roadmap.slice(0, 60).map((s) => ({
         label: String(s.label || "").slice(0, 300),
         detail: String(s.detail || "").slice(0, 300),
+        when: String(s.when || "week").slice(0, 12),
+        dimension: String(s.dimension || "").slice(0, 20),
         done: !!s.done,
         doneAt: s.doneAt ?? null,
       }));
@@ -468,30 +472,60 @@ function clampScore(v) {
 function sanitizePlan(p) {
   const str = (v, n = 600) => String(v == null ? "" : v).slice(0, n);
   const arr = (v, n = 24) => (Array.isArray(v) ? v.slice(0, n) : []);
+  const num = (v) => clampScore(v);
+
   return {
+    // v2 shape
+    engineVersion: 2,
     crisisType: str(p.crisisType, 140),
     acknowledgement: str(p.acknowledgement, 1200),
-    immediateNeeds: arr(p.immediateNeeds).map((x) => ({
-      title: str(x?.title, 160),
-      detail: str(x?.detail, 600),
+    isSample: !!p.isSample,
+    priorities: arr(p.priorities, 3).map((x) => ({
+      title: str(x && x.title, 120),
+      urgency: ["High", "Medium", "Low"].includes(x && x.urgency) ? x.urgency : "Medium",
+      why: str(x && x.why, 400),
+      nextStep: str(x && x.nextStep, 400),
+      dimension: str(x && x.dimension, 20),
     })),
-    risks: arr(p.risks).map((x) => ({
-      dimension: str(x?.dimension, 120),
-      level: clampScore(x?.level),
-      note: str(x?.note, 400),
+    dimensions: arr(p.dimensions, 6).map((d) => ({
+      id: str(d && d.id, 20),
+      label: str(d && d.label, 60),
+      score: num(d && d.score),
+      assessed: !!(d && d.assessed),
+      why: str(d && d.why, 300),
     })),
     actions: arr(p.actions, 30).map((x) => ({
-      when: str(x?.when, 60),
-      task: str(x?.task, 600),
+      when: str(x && x.when, 12),
+      task: str(x && x.task, 400),
+      why: str(x && x.why, 400),
+      dimension: str(x && x.dimension, 20),
     })),
     documents: arr(p.documents, 30).map((x) => str(x, 240)),
     helpers: arr(p.helpers).map((x) => ({
-      who: str(x?.who, 200),
-      how: str(x?.how, 600),
+      who: str(x && x.who, 200),
+      what: str(x && x.what, 300),
+      how: str(x && x.how, 400),
+    })),
+    risksToWatch: arr(p.risksToWatch).map((x) => ({
+      risk: str(x && x.risk, 300),
+      why: str(x && x.why, 400),
+      prevent: str(x && x.prevent, 400),
+    })),
+
+    // legacy fields, preserved so a plan saved by an older build is not
+    // silently stripped of content when it is re-saved by this one
+    risks: arr(p.risks).map((x) => ({
+      dimension: str(x && x.dimension, 120),
+      level: num(x && x.level),
+      note: str(x && x.note, 400),
+    })),
+    immediateNeeds: arr(p.immediateNeeds).map((x) => ({
+      title: str(x && x.title, 160),
+      detail: str(x && x.detail, 600),
     })),
     secondaryRisks: arr(p.secondaryRisks).map((x) => ({
-      risk: str(x?.risk, 300),
-      prevent: str(x?.prevent, 600),
+      risk: str(x && x.risk, 300),
+      prevent: str(x && x.prevent, 600),
     })),
   };
 }

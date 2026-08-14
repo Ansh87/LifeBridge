@@ -72,7 +72,7 @@ exports.handler = async (event) => {
     return { statusCode: 400, headers: CORS, body: JSON.stringify({ error: "Bad request." }) };
   }
 
-  const { prompt, system, json } = payload;
+  const { prompt, system, json, maxTokens } = payload;
   if (!prompt)
     return { statusCode: 400, headers: CORS, body: JSON.stringify({ error: "Missing prompt." }) };
 
@@ -80,7 +80,9 @@ exports.handler = async (event) => {
     contents: [{ role: "user", parts: [{ text: prompt }] }],
     generationConfig: {
       temperature: 0.6,
-      maxOutputTokens: 2048,
+      // The engine schema is large. Too small a budget truncates the JSON
+      // mid-object, which surfaces as an unexplained parse failure.
+      maxOutputTokens: Math.min(Math.max(Number(maxTokens) || 2048, 512), 8192),
       ...(json ? { responseMimeType: "application/json" } : {}),
     },
     ...(system ? { systemInstruction: { parts: [{ text: system }] } } : {}),

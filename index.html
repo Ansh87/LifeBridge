@@ -229,6 +229,8 @@ textarea.navinput:focus{border-color:var(--amber);outline:none}
 .res-grid{display:grid;grid-template-columns:1.1fr .9fr;gap:16px}
 @media(max-width:820px){.res-grid{grid-template-columns:1fr}}
 #resmap{height:340px;border-radius:var(--r-md);border:1px solid var(--line);z-index:1}
+#resmap.map-off{display:grid;place-items:center;background:var(--panel);border-style:dashed}
+.map-off-msg{max-width:320px;text-align:center;color:var(--ink-3);font-size:.85rem;line-height:1.55;padding:20px}
 .res-list{display:flex;flex-direction:column;gap:10px;max-height:420px;overflow-y:auto;padding-right:4px}
 .res-item{background:var(--panel);border:1px solid var(--line);border-radius:var(--r-md);padding:14px 15px}
 .res-item h5{font-size:.95rem;font-weight:600}
@@ -271,6 +273,138 @@ textarea.navinput:focus{border-color:var(--amber);outline:none}
 .chat-input input{flex:1;background:var(--panel);border:1px solid var(--line);border-radius:22px;padding:10px 15px;color:var(--ink);font-size:.9rem}
 .chat-input input:focus{border-color:var(--amber);outline:none}
 .chat-input button{width:40px;height:40px;border-radius:50%;background:var(--amber);color:#22160a;flex:none;display:flex;align-items:center;justify-content:center}
+
+/* ---------- Accessibility primitives ---------- */
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+body.modal-open{overflow:hidden}
+.linkish{color:var(--amber-soft);font-size:.82rem;font-weight:600;text-decoration:underline;text-underline-offset:3px;background:none;border:none;padding:8px 4px;min-height:32px}
+.linkish:hover{color:var(--amber)}
+.mini-btn,.chip{min-height:34px}
+
+/* ---------- Six-step strip ---------- */
+.steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;list-style:none}
+.step-card{background:var(--panel);border:1px solid var(--line);border-radius:var(--r-md);padding:15px 16px}
+.step-card .step-n{display:inline-grid;place-items:center;width:22px;height:22px;border-radius:50%;background:var(--panel-2);border:1px solid var(--line);color:var(--amber);font-size:.72rem;font-weight:700;font-family:var(--mono);margin-bottom:9px}
+.step-card strong{display:block;font-size:.95rem;font-weight:600;margin-bottom:3px}
+.step-card span{display:block;font-size:.8rem;color:var(--ink-3);line-height:1.45}
+.hero-link{display:inline-block;margin-top:14px;font-size:.86rem;color:var(--ink-2);text-decoration:underline;text-underline-offset:4px;background:none;border:none;padding:7px 2px}
+.hero-link:hover{color:var(--amber-soft)}
+.home-band{display:block;font-weight:600;color:var(--ink);margin-bottom:3px}
+
+/* ---------- Engine attribution ---------- */
+.plan-status-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+.engine-tag{font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3);font-weight:600}
+.engine-run{text-align:center}
+.engine-run-label{font-size:.7rem;letter-spacing:.14em;text-transform:uppercase;color:var(--amber);font-weight:600;margin-bottom:12px}
+.engine-strip{display:flex;align-items:center;justify-content:center;gap:7px;flex-wrap:wrap;font-size:.76rem}
+.engine-strip i{color:var(--line);font-style:normal}
+.engine-step{color:var(--ink-3);padding:3px 9px;border-radius:20px;border:1px solid var(--line-soft)}
+.engine-step.on{color:var(--amber);border-color:rgba(244,168,74,.4);background:rgba(244,168,74,.08)}
+
+/* ---------- Top priorities ---------- */
+.prio-list{list-style:none;display:flex;flex-direction:column;gap:11px}
+.prio{display:flex;gap:13px;background:var(--panel-2);border:1px solid var(--line);border-left-width:3px;border-radius:var(--r-md);padding:14px 16px}
+.prio.u-high{border-left-color:var(--danger)}
+.prio.u-med{border-left-color:var(--amber)}
+.prio.u-low{border-left-color:var(--sage)}
+.prio-rank{flex:none;width:24px;height:24px;border-radius:50%;display:grid;place-items:center;background:var(--ground-2);border:1px solid var(--line);font-family:var(--mono);font-size:.76rem;font-weight:700;color:var(--ink-2)}
+.prio-body{flex:1;min-width:0}
+.prio-head{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin-bottom:5px}
+.prio-head h5{font-size:1rem;font-weight:600}
+.urg{font-size:.68rem;letter-spacing:.08em;text-transform:uppercase;font-weight:700;padding:3px 8px;border-radius:20px}
+.urg.u-high{background:rgba(232,112,95,.15);color:var(--danger)}
+.urg.u-med{background:rgba(244,168,74,.15);color:var(--amber)}
+.urg.u-low{background:rgba(127,201,160,.15);color:var(--sage)}
+.prio-why,.prio-next{font-size:.85rem;color:var(--ink-2);line-height:1.5;margin-top:3px}
+.prio-why b,.prio-next b{color:var(--ink-3);font-weight:600}
+.dim-chip{display:inline-block;margin-top:8px;font-size:.7rem;color:var(--ink-3);background:var(--ground-2);border:1px solid var(--line-soft);border-radius:20px;padding:3px 10px}
+
+/* ---------- Score and dimensions ---------- */
+.score-head{display:flex;align-items:flex-end;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-bottom:16px}
+.score-big{font-family:var(--mono);font-size:2.6rem;font-weight:700;line-height:1}
+.score-big span{font-size:1rem;color:var(--ink-3);font-weight:500}
+.score-band{font-size:.85rem;color:var(--ink-2);font-weight:600;margin-top:2px}
+.dims{display:flex;flex-direction:column;gap:13px}
+.dims.compact{gap:8px;margin:10px 0 14px}
+.dim-row{display:grid;grid-template-columns:150px 1fr 56px;gap:11px;align-items:center}
+.dim-label{font-size:.85rem;color:var(--ink-2)}
+.dim-track{height:8px;background:var(--ground-2);border-radius:5px;overflow:hidden}
+.dim-fill{height:100%;border-radius:5px;transition:width .6s ease}
+.dim-val{font-family:var(--mono);font-size:.9rem;font-weight:700;text-align:right}
+.dim-gain{font-size:.68rem;margin-left:3px;color:var(--sage)}
+.dim-why{grid-column:1/-1;font-size:.78rem;color:var(--ink-3);line-height:1.45;margin-top:-4px}
+.dims.compact .dim-why{display:none}
+
+/* ---------- Timeline groups ---------- */
+.tl-group{margin-bottom:16px}
+.tl-group:last-child{margin-bottom:0}
+.tl-when{font-size:.7rem;letter-spacing:.12em;text-transform:uppercase;color:var(--amber);font-weight:700;margin-bottom:8px}
+.tl-task{background:var(--panel-2);border:1px solid var(--line-soft);border-radius:var(--r-sm);padding:11px 13px;margin-bottom:7px}
+.tl-task strong{display:block;font-size:.92rem;font-weight:600}
+.tl-task span{display:block;font-size:.8rem;color:var(--ink-3);margin-top:3px;line-height:1.45}
+.ack{font-size:1rem;color:var(--ink);line-height:1.6}
+.block-sub{font-size:.82rem;color:var(--ink-3);line-height:1.5;margin:-4px 0 14px}
+
+/* ---------- Roadmap groups ---------- */
+.rm-stats{display:flex;gap:22px;text-align:right}
+.rm-stats small{display:block;font-size:.7rem;color:var(--ink-3);letter-spacing:.04em}
+.rm-group{margin:18px 0}
+.rm-group-head{display:flex;align-items:baseline;justify-content:space-between;gap:10px;flex-wrap:wrap;border-bottom:1px solid var(--line-soft);padding-bottom:7px;margin-bottom:4px}
+.rm-group-head h4{font-size:.76rem;letter-spacing:.12em;text-transform:uppercase;color:var(--amber);font-weight:700}
+.rm-group-head span{font-size:.75rem;color:var(--ink-3)}
+.rm-foot{font-size:.78rem;color:var(--ink-3);line-height:1.5;border-top:1px solid var(--line-soft);margin-top:16px;padding-top:13px}
+
+/* ---------- Resource cards ---------- */
+.res-head{font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;font-weight:600;margin:14px 0 6px}
+.res-head:first-child{margin-top:2px}
+.res-head.amber{color:var(--amber)}
+.res-head.sage{color:var(--sage)}
+.res-top{display:flex;align-items:center;gap:8px;justify-content:space-between}
+.res-tag{font-size:.65rem;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3);border:1px solid var(--line);border-radius:20px;padding:2px 8px;flex:none}
+.res-why{font-size:.79rem;color:var(--ink-3);line-height:1.5;margin-top:6px}
+.res-why b{color:var(--ink-2);font-weight:600}
+.res-note{font-size:.76rem;color:var(--ink-3);line-height:1.5;margin:10px 2px 0}
+
+/* ---------- Plan cards ---------- */
+.pc-stats{display:flex;gap:18px;margin:11px 0 10px}
+.pc-num{display:block;font-family:var(--mono);font-size:1.05rem;font-weight:700;color:var(--sage)}
+.pc-stat small{display:block;font-size:.68rem;color:var(--ink-3);margin-top:1px}
+.pc-next{background:var(--ground-2);border-radius:var(--r-sm);padding:9px 11px;margin-bottom:4px}
+.pc-next b{display:block;font-size:.66rem;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3);margin-bottom:3px}
+.pc-next span{font-size:.82rem;color:var(--ink-2);line-height:1.4}
+
+/* ---------- Assistant suggestions ---------- */
+.chat-suggest{display:flex;gap:6px;flex-wrap:wrap;padding:0 12px 10px}
+.chat-suggest .chip{font-size:.74rem;padding:6px 11px}
+
+/* The top bar carries Emergency, My plans, the account chip and About. That is
+   more than 390px can hold, and letting it overflow put the page into sideways
+   scroll on every screen. Emergency stays full size and legible because it is
+   the safety-critical control; My plans moves into the account menu, which
+   already contains it. */
+@media (max-width:560px){
+  .brand-tag{display:none}
+  .brand-mark{width:32px;height:32px}
+  .brand-name{font-size:1.1rem}
+  .topbar{padding:16px 0 14px}
+  .topbar-actions{gap:6px}
+  .btn{padding:8px 11px;font-size:.8rem}
+  .sos{padding:8px 11px}
+  .acct{padding:4px 6px}
+  .acct-txt{display:none}
+  #acctSlot .btn-ghost{display:none}
+}
+
+@media (max-width:640px){
+  .dim-row{grid-template-columns:104px 1fr 46px;gap:8px}
+  .dim-label{font-size:.78rem}
+  .rm-stats{gap:16px}
+  .pc-stats{gap:14px}
+  .score-big{font-size:2.2rem}
+}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.001ms !important;animation-iteration-count:1 !important;transition-duration:.001ms !important}
+}
 
 /* ---------- Sign-in gate (first screen) ----------
    z-index sits below .modal-bg (80) on purpose, so Emergency and About open ON
@@ -485,14 +619,18 @@ body.gated{overflow:hidden}
     <div class="hero">
       <div class="hero-eyebrow">When everything changes at once</div>
       <h1>You don't have to figure out <em>what comes next</em> alone.</h1>
-      <p class="hero-sub">Tell LifeBridge what you're facing. It maps your immediate needs, weighs the risks, builds a step-by-step recovery plan, and points you to real help, then tracks your progress back to stable ground.</p>
+      <p class="hero-sub">Tell LifeBridge what you're facing. It identifies what needs attention first, creates a personalized recovery roadmap, connects you with relevant support, and helps you track your path toward stability.</p>
       <div class="cta-row">
         <button class="btn btn-amber cta-lg" onclick="go('navigator')">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 3v18M3 12h18" stroke="#22160a" stroke-width="2.4" stroke-linecap="round"/></svg>
-          Start where you are
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 3v18M3 12h18" stroke="#22160a" stroke-width="2.4" stroke-linecap="round"/></svg>
+          Start my recovery plan
         </button>
-        <button class="btn btn-ghost cta-lg" onclick="go('pillars')">Browse by situation</button>
+        <button class="btn btn-ghost cta-lg" onclick="runDemo()">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M6 4l14 8-14 8V4z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
+          Try demo
+        </button>
       </div>
+      <button class="hero-link" onclick="go('pillars')">Browse by situation</button>
     </div>
 
     <!-- Bridge / score -->
@@ -505,6 +643,12 @@ body.gated{overflow:hidden}
         </div>
         <svg class="bridge-svg" id="bridgeSvg" viewBox="0 0 600 120" preserveAspectRatio="none" aria-hidden="true"></svg>
       </div>
+    </div>
+
+    <!-- How LifeBridge works: the same six words used everywhere else -->
+    <div class="section">
+      <div class="section-head"><div><h2>How LifeBridge works</h2><p>The same six steps, every situation.</p></div></div>
+      <ol class="steps" id="howSteps"></ol>
     </div>
 
     <!-- Pillars preview -->
@@ -581,16 +725,17 @@ body.gated{overflow:hidden}
 </div>
 
 <!-- Chat -->
-<button class="chat-fab" onclick="toggleChat()" aria-label="Open assistant">
+<button class="chat-fab" onclick="toggleChat()" aria-label="Open the LifeBridge Recovery Assistant" aria-expanded="false" id="chatFab">
   <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M21 11.5a8.5 8.5 0 0 1-12.6 7.4L3 21l2.1-5.4A8.5 8.5 0 1 1 21 11.5z" stroke="#22160a" stroke-width="2" stroke-linejoin="round"/></svg>
 </button>
 <div class="chat-panel" id="chatPanel">
   <div class="chat-head">
     <span class="dot"></span>
-    <div><strong>LifeBridge Assistant</strong><br><span>Here to help you think it through</span></div>
+    <div><strong>LifeBridge Recovery Assistant</strong><br><span id="chatSub">Part of the Recovery Engine</span></div>
     <button onclick="toggleChat()" aria-label="Close">×</button>
   </div>
   <div class="chat-body" id="chatBody"></div>
+  <div class="chat-suggest" id="chatSuggest"></div>
   <div class="chat-input">
     <input id="chatInput" placeholder="Ask anything…" onkeydown="if(event.key==='Enter')sendChat()" />
     <button onclick="sendChat()" aria-label="Send"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M4 12l16-8-6 16-3-6-7-2z" stroke="#22160a" stroke-width="2" stroke-linejoin="round"/></svg></button>
@@ -598,20 +743,20 @@ body.gated{overflow:hidden}
 </div>
 
 <!-- Emergency modal -->
-<div class="modal-bg" id="emergencyModal">
+<div class="modal-bg" id="emergencyModal" role="dialog" aria-modal="true" aria-labelledby="emgTitle">
   <div class="modal">
     <button class="close" onclick="closeModal('emergencyModal')" aria-label="Close">×</button>
-    <h3>Get help now</h3>
+    <h3 id="emgTitle">Get help now</h3>
     <p>If you or someone else is in immediate danger, call your local emergency number first.</p>
     <div class="emg-list" id="emgList"></div>
   </div>
 </div>
 
 <!-- Sign-in modal -->
-<div class="modal-bg" id="authModal">
+<div class="modal-bg" id="authModal" role="dialog" aria-modal="true" aria-labelledby="authTitle">
   <div class="modal" style="max-width:480px">
     <button class="close" onclick="closeModal('authModal')" aria-label="Close">×</button>
-    <h3>Keep your plan</h3>
+    <h3 id="authTitle">Keep your plan</h3>
     <p>Saving lets you close this tab, change devices, and come back to the same recovery roadmap.</p>
     <div id="authOptions" style="margin-top:18px"></div>
     <div class="auth-note" id="authNote"></div>
@@ -619,25 +764,38 @@ body.gated{overflow:hidden}
 </div>
 
 <!-- Account modal -->
-<div class="modal-bg" id="acctModal">
+<div class="modal-bg" id="acctModal" role="dialog" aria-modal="true" aria-labelledby="acctTitle">
   <div class="modal" style="max-width:480px">
     <button class="close" onclick="closeModal('acctModal')" aria-label="Close">×</button>
-    <h3>Your account</h3>
+    <h3 id="acctTitle">Your account</h3>
     <div id="acctBody" style="margin-top:16px"></div>
   </div>
 </div>
 
 <!-- About modal -->
-<div class="modal-bg" id="aboutModal">
+<div class="modal-bg" id="aboutModal" role="dialog" aria-modal="true" aria-labelledby="aboutTitle">
   <div class="modal">
     <button class="close" onclick="closeModal('aboutModal')" aria-label="Close">×</button>
-    <h3>About LifeBridge</h3>
+    <h3 id="aboutTitle">About LifeBridge</h3>
     <div id="aboutBody"></div>
   </div>
 </div>
 
-<div class="toast" id="toast"></div>
+<!-- Score explainer -->
+<div class="modal-bg" id="scoreInfoModal" role="dialog" aria-modal="true" aria-labelledby="scoreInfoTitle">
+  <div class="modal">
+    <button class="close" onclick="closeModal('scoreInfoModal')" aria-label="Close">×</button>
+    <h3 id="scoreInfoTitle">About your LifeBridge Score</h3>
+    <div id="scoreInfoBody"></div>
+  </div>
+</div>
+
+<!-- Screen-reader announcements for changes that are otherwise only visual -->
+<div id="srLive" class="sr-only" role="status" aria-live="polite" aria-atomic="true"></div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="js/lifebridge-engine.js"></script>
 <script>
 /* ================================================================
    LifeBridge AI: application logic
@@ -742,7 +900,7 @@ function loadState(){
   // cloudPlanId links the on-device session to a Firestore document, so
   // checking off a step here updates the same plan on the user's other devices.
   const base = { score:null, activeCrisis:null, roadmap:[], lastPlan:null,
-                 situationText:"", source:"ai", cloudPlanId:null };
+                 situationText:"", source:"ai", cloudPlanId:null, isSample:false };
   try{ const s = JSON.parse(localStorage.getItem(STORE_KEY)); if(s) return Object.assign(base, s); }catch(e){}
   return base;
 }
@@ -753,7 +911,7 @@ function go(name, opts){
   document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));
   const el = document.getElementById("s-"+name);
   if(el){ el.classList.add("active"); window.scrollTo({top:0,behavior:"smooth"}); }
-  if(name==="resources") initMap();
+  if(name==="resources"){ initMap(); updateResSub(); }
   if(name==="roadmap") renderRoadmap();
   if(name==="plans") renderPlans();
 }
@@ -793,11 +951,12 @@ function updateScoreUI(){
   if(s==null){ scoreEl.textContent="·"; scoreEl.className="bridge-score"; drawBridge(null); return; }
   scoreEl.textContent = s;
   scoreEl.className = "bridge-score " + (s>=66?"":s>=33?"mid":"low");
+  const band = E.scoreBand(s);
   const words = s>=80?"You're on stable ground. Keep the momentum.":
                 s>=55?"Making real progress. A few key steps remain.":
                 s>=30?"You're in the thick of it, the plan below is your path out.":
                 "This is a hard moment. Let's take the very next step together.";
-  stateEl.textContent = words;
+  stateEl.innerHTML = `<span class="home-band">${esc(band.label)}</span>${esc(words)}`;
   drawBridge(s);
 }
 
@@ -850,7 +1009,7 @@ function addChip(t){
    Detects crisis type → multi-dimensional risk → recovery plan →
    predicts secondary risks. Live via Gemini; rule-based fallback.
    ================================================================ */
-async function callAI(prompt, system, json){
+async function callAI(prompt, system, json, maxTokens){
   // One client-side retry on top of the proxy's own backoff, so a brief
   // rate-limit window almost never reaches the user as an offline fallback.
   let lastErr;
@@ -858,7 +1017,7 @@ async function callAI(prompt, system, json){
     try{
       const r = await fetch(AI_ENDPOINT,{
         method:"POST", headers:{"Content-Type":"application/json"},
-        body: JSON.stringify({prompt, system, json})
+        body: JSON.stringify({prompt, system, json, maxTokens})
       });
       if(!r.ok){
         // The proxy reports which model failed and why. Surface it to the
@@ -898,177 +1057,353 @@ function parseLenient(raw){
   throw new Error("unparseable");
 }
 
-const ACRE_SYSTEM = `You are ACRE, the reasoning core of LifeBridge, a crisis-recovery support tool. A person in a difficult life situation describes what they are facing. Respond with compassion but stay practical and specific. You are NOT a lawyer, doctor, or emergency service, and you never claim to be. Output ONLY valid JSON (no markdown) with this exact shape:
-{
- "crisisType": "short label",
- "acknowledgement": "1-2 warm, human sentences that show you understood their specific situation",
- "immediateNeeds": [{"title":"Food","detail":"why / what to do first"}],
- "risks": [{"dimension":"Financial","level":0-100,"note":"one line"}],
- "actions": [{"when":"Today","task":"concrete step"},{"when":"This week","task":"..."},{"when":"This month","task":"..."}],
- "documents": ["specific document to gather"],
- "helpers": [{"who":"Organization/program type","how":"what they do / how to reach"}],
- "secondaryRisks": [{"risk":"what could happen next","prevent":"how to get ahead of it"}]
-}
-Give 3-5 items per list. Risk levels reflect real severity. If there is any sign of immediate physical danger or self-harm, make the first immediate need contacting emergency services or 988, and set a high safety risk.`;
+/* ================================================================
+   PLAN, SCORE AND ROADMAP
+   The reasoning lives in js/lifebridge-engine.js. This section is the
+   presentation of it. Anything that decides something belongs there;
+   anything that draws something belongs here.
+   ================================================================ */
+const E = window.LBEngine;
 
-function buildPrompt(text, crisis){
-  let ctx = "";
-  if(crisis){
-    ctx = `\n\nContext: the person selected the situation "${crisis.name}". Relevant risk dimensions for this situation: ${crisis.dims.join(", ")}.`;
-  }
-  return `The person writes:\n"""${text}"""${ctx}\n\nProduce the ACRE JSON now.`;
-}
+function buildPrompt(text, crisis){ return E.buildPrompt(text, crisis); }
 
-async function runNavigator(){
-  const text = document.getElementById("navInput").value.trim();
-  if(text.length < 8){ toast("Tell me a little more about what's happening."); return; }
+async function runNavigator(opts){
+  opts = opts || {};
+  const input = document.getElementById("navInput");
+  const text = (opts.text != null ? opts.text : input.value).trim();
+  if(text.length < 8){ toast("Tell me a little more about what's happening."); input.focus(); return; }
+
   const btn = document.getElementById("navGo");
   const out = document.getElementById("planOut");
   btn.disabled = true;
+  btn.setAttribute("aria-busy","true");
   btn.innerHTML = `<span class="spin"></span> Building your plan…`;
-  out.innerHTML = `<div class="plan-block" style="text-align:center;color:var(--ink-3)">Reading your situation and mapping what matters most…</div>`;
+  out.setAttribute("aria-busy","true");
+  out.innerHTML = `<div class="plan-block engine-run" role="status">
+      <div class="engine-run-label">Recovery Engine working</div>
+      <div class="engine-strip">${E.ENGINE_STEPS.map((s,i)=>
+        `<span class="engine-step${i<2?' on':''}">${esc(s.label)}</span>`).join('<i aria-hidden="true">›</i>')}</div>
+      <p style="color:var(--ink-3);font-size:.88rem;margin-top:12px">Reading your situation and mapping what matters most…</p>
+    </div>`;
 
   const crisis = STATE.activeCrisis ? flatCrises[STATE.activeCrisis] : null;
-  let plan = null;
+  let plan = null, source = "ai";
+
   try{
-    const raw = await callAI(buildPrompt(text, crisis), ACRE_SYSTEM, true);
-    plan = parseLenient(raw);
+    const raw = await callAI(E.buildPrompt(text, crisis), E.ACRE_SYSTEM, true, 4096);
+    plan = E.normalizePlan(parseLenient(raw));
+    // A response missing the parts that make the plan explainable is not usable,
+    // so treat it as a failure rather than rendering a half-empty screen.
+    if(!plan.actions.length || !plan.priorities.length) throw new Error("incomplete plan");
   }catch(e){
-    plan = fallbackPlan(text, crisis); // graceful, honest degradation
-    out.dataset.fallback = "1";
+    console.warn("[LifeBridge] planner unavailable, using offline framework:", e.message);
+    // The demo must never fail in front of someone, so it falls back to its own
+    // fully written plan rather than the generic framework.
+    if(opts.demoPlan){ plan = E.normalizePlan(opts.demoPlan); source = "demo"; }
+    else            { plan = E.fallbackPlan(text, crisis);    source = "fallback"; }
   }
-  const usedFallback = out.dataset.fallback==="1";
-  STATE.lastPlan = plan;
-  STATE.situationText = text;          // the user's own words, kept for save
-  STATE.source = usedFallback ? "fallback" : "ai";
-  STATE.cloudPlanId = null;            // a new plan is unsaved until asked
-  renderPlan(plan, usedFallback);
-  seedRoadmap(plan);
-  computeScoreFromRisks(plan);
+
+  if(opts.sample) plan.isSample = true;
+
+  STATE.lastPlan      = plan;
+  STATE.situationText = text;
+  STATE.source        = (source === "fallback") ? "fallback" : "ai";
+  STATE.isSample      = !!plan.isSample;
+  STATE.cloudPlanId   = null;
+  STATE.roadmap       = E.seedRoadmapFromPlan(plan);
+  refreshScore();
+
+  out.removeAttribute("aria-busy");
+  renderPlan(plan, source);
   btn.disabled = false;
-  btn.innerHTML = `<svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="#22160a" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg> Rebuild plan`;
-  delete out.dataset.fallback;
+  btn.removeAttribute("aria-busy");
+  btn.innerHTML = `<svg width="17" height="17" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" stroke="#22160a" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg> Rebuild plan`;
+  announce("Your recovery plan is ready.");
+  document.getElementById("planOut").focus();
 }
 
-/* rule-based fallback when AI is unavailable, honest, still useful */
-function fallbackPlan(text, crisis){
-  const c = crisis || {name:"your situation", dims:["Financial","Housing","Health","Safety"], docs:["Photo ID","Proof of income","Insurance information"], helpers:["211, community resources","Local nonprofit aid","Legal aid society"]};
-  return {
-    crisisType: c.name,
-    acknowledgement: "The AI planner is offline right now, so here's a general starting framework for "+c.name.toLowerCase()+". Reach a live person through the resources below for tailored help.",
-    immediateNeeds: c.dims.slice(0,4).map(d=>({title:d, detail:"Stabilize this first, see steps and helpers below."})),
-    risks: c.dims.map((d,i)=>({dimension:d, level: [70,55,45,40][i]||50, note:"Estimated, confirm with a local advisor."})),
-    actions: [
-      {when:"Today", task:"Call 211 (or text your ZIP to 898211) to reach local emergency resources."},
-      {when:"This week", task:"Gather the documents listed below and contact the most relevant helper."},
-      {when:"This month", task:"Build a written recovery checklist and track each step to completion."}
-    ],
-    documents: c.docs || ["Photo ID","Proof of income","Insurance information"],
-    helpers: (c.helpers||["211 community resources"]).map(h=>({who:h, how:"See the Resources tab to locate the nearest option."})),
-    secondaryRisks: [{risk:"Falling behind on a second obligation while handling the first", prevent:"List every deadline this month and tackle the soonest first."}]
-  };
+/* ---------- demo ----------
+   One tap, no typing, no account. Pre-fills the assessment with a written
+   scenario and runs the real engine over it, so a first-time viewer sees the
+   genuine output rather than a mock. If the planner is unreachable it falls
+   back to the scenario's own authored plan, so the walkthrough always works. */
+function runDemo(){
+  const d = E.DEMO_SCENARIO;
+  STATE.activeCrisis = d.crisisId;
+  go("navigator");
+  const input = document.getElementById("navInput");
+  input.value = d.text;
+  document.getElementById("navTitle").textContent = "Demo scenario, sample data";
+  document.getElementById("navHint").textContent =
+    "This is a written example, not a real person. It runs through exactly the same Recovery Engine your own situation would.";
+  runNavigator({ text: d.text, sample: true, demoPlan: d.plan });
 }
-/* ---------- Render the plan ---------- */
-function riskColor(v){ return v>=66?"var(--danger)":v>=33?"var(--amber)":"var(--sage)"; }
 
-function renderPlan(p, isFallback){
+/* ---------- scoring ---------- */
+function refreshScore(){
+  const p = STATE.lastPlan;
+  STATE.score = p ? E.lifeBridgeScore(p, STATE.roadmap) : null;
+  saveState();
+  updateScoreUI();
+}
+
+function dimColor(v){ return v>=66 ? "var(--sage)" : v>=40 ? "var(--amber)" : "var(--danger)"; }
+function urgencyClass(u){ return u==="High" ? "u-high" : u==="Low" ? "u-low" : "u-med"; }
+
+/* ---------- the plan screen ---------- */
+function renderPlan(p, source){
   const out = document.getElementById("planOut");
-  const need=(p.immediateNeeds||[]).map(n=>`
-    <div class="need-item"><span class="need-ico">•</span>
-      <div class="need-txt"><strong>${esc(n.title)}</strong><span>${esc(n.detail||"")}</span></div></div>`).join("");
-  const risks=(p.risks||[]).map(r=>`
-    <div class="risk-row"><div class="risk-label">${esc(r.dimension)}</div>
-      <div class="risk-track"><div class="risk-fill" style="width:${clamp(r.level)}%;background:${riskColor(r.level)}"></div></div>
-      <div class="risk-val" style="color:${riskColor(r.level)}">${clamp(r.level)}</div></div>
-      ${r.note?`<div style="font-size:.78rem;color:var(--ink-3);margin:-2px 0 6px 162px">${esc(r.note)}</div>`:""}`).join("");
-  const acts=(p.actions||[]).map(a=>`
-    <div class="tl-item"><div class="tl-when">${esc(a.when)}</div><div class="tl-task">${esc(a.task)}</div></div>`).join("");
-  const docs=(p.documents||[]).map(d=>`<div class="doc-item"><span class="need-ico">📄</span><div class="need-txt"><strong>${esc(d)}</strong></div></div>`).join("");
-  const helpers=(p.helpers||[]).map(h=>`<div class="help-item"><span class="need-ico">🤝</span><div class="need-txt"><strong>${esc(h.who)}</strong><span>${esc(h.how||"")}</span></div></div>`).join("");
-  const sec=(p.secondaryRisks||[]).map(s=>`<div class="need-item"><span class="need-ico">↗</span><div class="need-txt"><strong>${esc(s.risk)}</strong><span>Get ahead of it: ${esc(s.prevent)}</span></div></div>`).join("");
+  const dims  = E.currentDimensions(p, STATE.roadmap);
+  const score = E.lifeBridgeScore(p, STATE.roadmap);
+  const band  = E.scoreBand(score);
+  const prog  = E.recoveryProgress(STATE.roadmap);
+
+  const status = p.isSample
+    ? `<div class="status sample"><span class="dot"></span>Demo scenario, sample data</div>`
+    : source === "fallback"
+      ? `<div class="status offline"><span class="dot"></span>Planner offline, showing a general framework</div>`
+      : `<div class="status live"><span class="dot"></span>Personalized by LifeBridge</div>`;
+
+  const priorities = (p.priorities||[]).map((pr,i)=>`
+    <li class="prio ${urgencyClass(pr.urgency)}">
+      <span class="prio-rank" aria-hidden="true">${i+1}</span>
+      <div class="prio-body">
+        <div class="prio-head">
+          <h5>${esc(pr.title)}</h5>
+          <span class="urg ${urgencyClass(pr.urgency)}">${esc(pr.urgency)} priority</span>
+        </div>
+        ${pr.why ? `<p class="prio-why"><b>Why:</b> ${esc(pr.why)}</p>` : ""}
+        ${pr.nextStep ? `<p class="prio-next"><b>Next step:</b> ${esc(pr.nextStep)}</p>` : ""}
+        ${E.DIM_BY_ID[pr.dimension] ? `<span class="dim-chip">Supports ${esc(E.DIM_BY_ID[pr.dimension].label)}</span>` : ""}
+      </div>
+    </li>`).join("");
+
+  const dimRows = dims.map(d=>`
+    <div class="dim-row">
+      <div class="dim-label">${esc(d.label)}</div>
+      <div class="dim-track"><div class="dim-fill" style="width:${d.current}%;background:${dimColor(d.current)}"></div></div>
+      <div class="dim-val" style="color:${dimColor(d.current)}">${d.current}${
+        d.current>d.base ? `<span class="dim-gain" title="improved by completed actions">+${d.current-d.base}</span>` : ""}</div>
+      ${d.why ? `<p class="dim-why">${esc(d.why)}</p>` : `<p class="dim-why">Not enough detail to assess this area.</p>`}
+    </div>`).join("");
+
+  const actionsByBucket = E.WHEN_BUCKETS.map(b=>{
+    const items = (p.actions||[]).filter(a=>a.when===b.id);
+    if(!items.length) return "";
+    return `<div class="tl-group">
+      <div class="tl-when">${esc(b.label)}</div>
+      ${items.map(a=>`<div class="tl-task">
+        <strong>${esc(a.task)}</strong>
+        ${a.why?`<span>${esc(a.why)}</span>`:""}
+      </div>`).join("")}
+    </div>`;
+  }).join("");
+
+  const docs = (p.documents||[]).map(d=>
+    `<div class="doc-item"><span class="need-ico" aria-hidden="true">📄</span><div class="need-txt"><strong>${esc(d)}</strong></div></div>`).join("");
+
+  const helpers = (p.helpers||[]).map(h=>`
+    <div class="help-item"><span class="need-ico" aria-hidden="true">🤝</span>
+      <div class="need-txt"><strong>${esc(h.who)}</strong>
+      ${h.what?`<span>${esc(h.what)}</span>`:""}
+      ${h.how?`<span>${esc(h.how)}</span>`:""}</div></div>`).join("");
+
+  const watch = (p.risksToWatch||[]).map(r=>`
+    <div class="need-item"><span class="need-ico" aria-hidden="true">↗</span>
+      <div class="need-txt"><strong>${esc(r.risk)}</strong>
+        ${r.why?`<span><b>Why:</b> ${esc(r.why)}</span>`:""}
+        ${r.prevent?`<span><b>Get ahead of it:</b> ${esc(r.prevent)}</span>`:""}
+      </div></div>`).join("");
 
   out.innerHTML = `
-    ${isFallback?`<div class="status offline" style="margin-bottom:12px"><span class="dot"></span>Planner offline, showing a general framework</div>`:`<div class="status live" style="margin-bottom:12px"><span class="dot"></span>Personalized by LifeBridge</div>`}
-    <div class="plan-block" style="border-color:var(--sage)">
-      <h4>What we heard</h4>
-      <p style="font-size:1rem;color:var(--ink)">${esc(p.acknowledgement||"")}</p>
+    <div class="plan-status-row">${status}
+      <span class="engine-tag">Powered by the LifeBridge Recovery Engine</span>
     </div>
-    <div class="plan-block"><h4>Immediate needs</h4>${need}</div>
-    <div class="plan-block"><h4>Risk assessment</h4>${risks}</div>
-    <div class="plan-block"><h4>Your action plan</h4><div class="timeline">${acts}</div></div>
-    <div class="plan-block"><h4>Documents to gather</h4>${docs}</div>
-    <div class="plan-block"><h4>Who can help</h4>${helpers}
+
+    <div class="plan-block" style="border-color:var(--sage)">
+      <h4>Understand · what we heard</h4>
+      <p class="ack">${esc(p.acknowledgement||"")}</p>
+    </div>
+
+    <div class="plan-block">
+      <h4>Prioritize · what matters most right now</h4>
+      <p class="block-sub">Drawn from the assessment below. The conclusion comes first so you do not have to read a score to know where to start.</p>
+      <ol class="prio-list">${priorities}</ol>
+    </div>
+
+    <div class="plan-block">
+      <h4>Assess · your LifeBridge Score</h4>
+      <p class="block-sub">The assessment those priorities came from. An AI-estimated stability indicator, not a clinical, legal or financial assessment.</p>
+      <div class="score-head">
+        <div>
+          <div class="score-big" style="color:${dimColor(score)}">${score}<span>/100</span></div>
+          <div class="score-band">${esc(band.label)}</div>
+        </div>
+        <button class="linkish" onclick="openScoreInfo()" aria-haspopup="dialog">How is this calculated?</button>
+      </div>
+      <div class="dims">${dimRows}</div>
+    </div>
+
+    <div class="plan-block">
+      <h4>Plan · your recovery roadmap</h4>
+      <div class="timeline">${actionsByBucket || `<p style="color:var(--ink-3)">No actions were generated.</p>`}</div>
+      <button class="btn btn-amber" style="margin-top:14px" onclick="go('roadmap')">Track these and mark them off →</button>
+    </div>
+
+    <div class="plan-block"><h4>Documents to gather</h4>${docs || `<p style="color:var(--ink-3)">None identified.</p>`}</div>
+
+    <div class="plan-block"><h4>Connect · who may be able to help</h4>${helpers}
       <button class="btn btn-sage" style="margin-top:14px" onclick="go('resources')">Find these near me →</button></div>
-    ${sec?`<div class="plan-block foresight"><div class="foresight-tag">Looking ahead</div><h4>What could come next, and how to prevent it</h4><p class="foresight-lead">Most tools stop at today's crisis. LifeBridge flags the setbacks that tend to follow, so you can head them off.</p>${sec}</div>`:""}
+
+    ${watch ? `<div class="plan-block foresight">
+      <div class="foresight-tag">Looking ahead</div>
+      <h4>Risks to watch</h4>
+      <p class="foresight-lead">Based on the information you provided, these areas may need attention if your situation continues or changes. They are possibilities to prepare for, not predictions.</p>
+      ${watch}</div>` : ""}
+
     <div class="cta-row">
-      <button class="btn btn-amber cta-lg" onclick="go('roadmap')">Track this as my roadmap →</button>
+      <button class="btn btn-amber cta-lg" onclick="go('roadmap')">Recover · track my progress →</button>
       <span id="savePlanSlot"></span>
       <button class="btn btn-ghost cta-lg" onclick="openEmergency()">Need help right now?</button>
     </div>
-    <p class="plan-safety">Guidance to help you organize and act, not professional advice. In an emergency, call 911. For crisis support, call or text 988. <a onclick="openAbout()">More</a></p>
+
+    <p class="plan-safety">Decision support to help you organize and act. Not legal, medical, financial or emergency advice, and not an eligibility determination. In an emergency call 911. For crisis support call or text 988. <a onclick="openAbout()" role="button" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openAbout()}">More</a></p>
   `;
   renderSaveButton();
 }
 
-/* ---------- Score from risk profile ---------- */
-function computeScoreFromRisks(p){
-  const rs = (p.risks||[]).map(r=>clamp(r.level));
-  if(!rs.length){ return; }
-  const avgRisk = rs.reduce((a,b)=>a+b,0)/rs.length;
-  // score is inverse of risk, nudged by roadmap completion later
-  STATE.score = Math.round(100 - avgRisk);
-  saveState(); updateScoreUI();
+function openScoreInfo(){
+  const p = STATE.lastPlan;
+  const dims = p ? E.currentDimensions(p, STATE.roadmap) : [];
+  document.getElementById("scoreInfoBody").innerHTML = `
+    <p>The LifeBridge Score is an <strong>AI-estimated stability indicator</strong>. It is decision support, meant to help you see which areas may need attention first.</p>
+    <p><strong>It is not</strong> a clinical, legal, financial or government assessment, and it does not determine whether you qualify for any programme.</p>
+    <h4 class="about-h">How it is worked out</h4>
+    <ol class="about-ol">
+      <li>The Recovery Engine reads your situation and estimates stability in six areas, from 0 (in crisis) to 100 (stable).</li>
+      <li>Your score is the average of those six areas.</li>
+      <li>Each roadmap action is linked to one area. Completing it raises that area only, not all of them.</li>
+      <li>Completing every action linked to an area closes at most <strong>half</strong> the remaining gap to 100. Checking a box is evidence of progress, not proof of stability.</li>
+    </ol>
+    ${dims.length ? `<h4 class="about-h">Where yours comes from</h4>
+      <div class="dims compact">${dims.map(d=>`
+        <div class="dim-row">
+          <div class="dim-label">${esc(d.label)}</div>
+          <div class="dim-track"><div class="dim-fill" style="width:${d.current}%;background:${dimColor(d.current)}"></div></div>
+          <div class="dim-val" style="color:${dimColor(d.current)}">${d.current}</div>
+        </div>`).join("")}</div>` : ""}
+    <p style="color:var(--ink-3);font-size:.85rem">Estimates come from the details you provide. The more you share, the more specific they can be.</p>`;
+  openModal("scoreInfoModal");
 }
 
-/* ---------- Roadmap (from plan actions) ---------- */
-function seedRoadmap(p){
-  const steps=[];
-  (p.actions||[]).forEach(a=>steps.push({label:a.task, detail:a.when, done:false}));
-  (p.documents||[]).slice(0,3).forEach(d=>steps.push({label:"Gather: "+d, detail:"Document", done:false}));
-  STATE.roadmap = steps; saveState();
-}
+/* ---------- roadmap ---------- */
+function seedRoadmap(p){ STATE.roadmap = E.seedRoadmapFromPlan(p); saveState(); }
+
 function renderRoadmap(){
   const out = document.getElementById("roadmapOut");
   if(!STATE.roadmap || !STATE.roadmap.length){
-    out.innerHTML = `<div class="roadmap"><p style="color:var(--ink-2)">No roadmap yet. Start with the navigator and your steps will appear here to track.</p><button class="btn btn-amber cta-lg" style="margin-top:14px" onclick="go('navigator')">Start an assessment →</button></div>`;
+    out.innerHTML = `<div class="roadmap"><p style="color:var(--ink-2)">No roadmap yet. Start an assessment and your steps will appear here to track.</p>
+      <div class="cta-row" style="margin-top:14px">
+        <button class="btn btn-amber cta-lg" onclick="go('navigator')">Start my recovery plan →</button>
+        <button class="btn btn-ghost cta-lg" onclick="runDemo()">Try the demo</button>
+      </div></div>`;
     return;
   }
-  const done = STATE.roadmap.filter(s=>s.done).length;
-  const pct = Math.round(done/STATE.roadmap.length*100);
+  const prog  = E.recoveryProgress(STATE.roadmap);
+  const score = STATE.score;
+  const band  = score==null ? null : E.scoreBand(score);
+
+  const groups = E.WHEN_BUCKETS.map(b=>{
+    const idx = STATE.roadmap.map((s,i)=>[s,i]).filter(([s])=> (s.when||"week")===b.id);
+    if(!idx.length) return "";
+    const doneN = idx.filter(([s])=>s.done).length;
+    return `<div class="rm-group">
+      <div class="rm-group-head">
+        <h4>${esc(b.label)}</h4>
+        <span>${esc(b.note)} · ${doneN}/${idx.length} done</span>
+      </div>
+      ${idx.map(([s,i])=>{
+        const dim = E.DIM_BY_ID[s.dimension];
+        return `<div class="step ${s.done?'done':''}">
+          <button class="step-check ${s.done?'done':''}" onclick="toggleStep(${i})"
+            role="checkbox" aria-checked="${s.done}" aria-label="${esc(s.label)}">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12l5 5 9-11" stroke="#0f2419" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <div class="step-body">
+            <strong>${esc(s.label)}</strong>
+            ${s.detail?`<p>${esc(s.detail)}</p>`:""}
+            ${dim?`<span class="dim-chip">This action supports ${esc(dim.label)}</span>`:""}
+          </div>
+        </div>`;
+      }).join("")}
+    </div>`;
+  }).join("");
+
   out.innerHTML = `<div class="roadmap">
-    <div class="rm-head"><div><h3 style="font-family:var(--serif);font-size:1.3rem">${esc(STATE.lastPlan?.crisisType||"Recovery")}</h3>
-      <p style="color:var(--ink-3);font-size:.85rem">${done} of ${STATE.roadmap.length} steps complete</p></div>
-      <div class="rm-progress">${pct}%</div></div>
-    <div class="rm-track"><div class="rm-fill" style="width:${pct}%"></div></div>
-    ${STATE.roadmap.map((s,i)=>`
-      <div class="step ${s.done?'done':''}">
-        <div class="step-check ${s.done?'done':''}" onclick="toggleStep(${i})" role="checkbox" aria-checked="${s.done}" tabindex="0" onkeydown="if(event.key===' '||event.key==='Enter'){event.preventDefault();toggleStep(${i})}">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M5 12l5 5 9-11" stroke="#0f2419" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        </div>
-        <div class="step-body"><strong>${esc(s.label)}</strong><p>${esc(s.detail||"")}</p></div>
-      </div>`).join("")}
+    <div class="rm-head">
+      <div>
+        <h3>${esc(STATE.lastPlan && STATE.lastPlan.crisisType || "Recovery")}</h3>
+        <p>${prog.done} of ${prog.total} actions complete</p>
+      </div>
+      <div class="rm-stats">
+        <div><span class="rm-progress">${prog.pct}%</span><small>Recovery progress</small></div>
+        ${score!=null?`<div><span class="rm-progress" style="color:${dimColor(score)}">${score}</span><small>${esc(band.label)}</small></div>`:""}
+      </div>
+    </div>
+    <div class="rm-track"><div class="rm-fill" style="width:${prog.pct}%"></div></div>
+    ${STATE.isSample?`<div class="status sample" style="margin-bottom:14px"><span class="dot"></span>Demo scenario, sample data</div>`:""}
+    ${groups}
+    <p class="rm-foot">Completing an action raises the area it supports. It closes at most half the remaining gap, because real recovery is more than a checklist.</p>
   </div>`;
 }
+
 function toggleStep(i){
-  STATE.roadmap[i].done = !STATE.roadmap[i].done;
-  // recovery lifts the score: blend risk-based base with completion
-  const done = STATE.roadmap.filter(s=>s.done).length;
-  const pct = done/STATE.roadmap.length;
-  const base = STATE.lastPlan ? 100 - (STATE.lastPlan.risks||[]).reduce((a,r)=>a+clamp(r.level),0)/Math.max(1,(STATE.lastPlan.risks||[]).length) : 40;
-  STATE.score = Math.round(base + (100-base)*pct);
-  saveState(); renderRoadmap(); updateScoreUI();
-  syncRoadmap();   // push progress to this plan's cloud copy, if it has one
-  if(pct===1) toast("Every step complete. You've rebuilt to stable ground. 🌉");
+  const step = STATE.roadmap[i];
+  if(!step) return;
+  step.done = !step.done;
+  step.doneAt = step.done ? Date.now() : null;
+  refreshScore();
+  renderRoadmap();
+  syncRoadmap();
+
+  const dim = E.DIM_BY_ID[step.dimension];
+  if(step.done){
+    announce(`${step.label} marked complete.` + (dim?` This supports ${dim.label}.`:""));
+    const prog = E.recoveryProgress(STATE.roadmap);
+    if(prog.pct===100) toast("Every action complete. That is real ground regained.");
+    else if(dim)       toast(`Marked complete. This supports ${dim.label}.`);
+    else               toast("Marked complete.");
+  }else{
+    announce(`${step.label} marked not complete.`);
+  }
 }
+
 /* ---------- Resources map ---------- */
 let map, mapInit=false;
 const RESOURCE_QUERIES = ["food bank","emergency shelter","legal aid","social services"];
 function initMap(){
   const statusEl = document.getElementById("resStatus");
-  // hotlines are always shown & always live
+  // hotlines and matched resources render first and unconditionally, so the
+  // safety-critical part of this screen never depends on anything downstream
   renderResList([], true);
   if(mapInit){ return; }
   mapInit = true;
+
+  // Leaflet comes from a CDN. If it is blocked, offline, or the CDN is having a
+  // bad day, the map is the only thing that should be lost. Before this guard a
+  // missing L threw and took the whole screen down, hotlines included.
+  if(typeof L === "undefined"){
+    const el = document.getElementById("resmap");
+    if(el){
+      el.classList.add("map-off");
+      el.innerHTML = `<div class="map-off-msg">Map unavailable right now. The crisis lines and matched resources beside this still work, and 211 can find services in your area by phone.</div>`;
+    }
+    statusEl.className = "status offline";
+    statusEl.innerHTML = `<span class="dot"></span>Map unavailable, crisis lines still live`;
+    return;
+  }
+
+  try{
   map = L.map("resmap",{zoomControl:true}).setView([39.5,-98.35],4);
   L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{
     attribution:"© OpenStreetMap", maxZoom:18
@@ -1087,7 +1422,12 @@ function initMap(){
       {timeout:8000}
     );
   }else{
-    statusEl.className="status offline"; statusEl.innerHTML=`<span class="dot"></span>Location unavailable`;
+    statusEl.className="status offline"; statusEl.innerHTML=`<span class="dot"></span>Location unavailable, crisis lines still live`;
+  }
+  }catch(e){
+    console.warn("[LifeBridge] map unavailable:", e && e.message);
+    statusEl.className = "status offline";
+    statusEl.innerHTML = `<span class="dot"></span>Map unavailable, crisis lines still live`;
   }
 }
 async function loadNearby(lat,lng,statusEl){
@@ -1119,15 +1459,36 @@ async function loadNearby(lat,lng,statusEl){
 function renderResList(places, withHotlines){
   const el = document.getElementById("resList");
   let html = "";
+
   if(withHotlines){
-    html += `<div style="font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--amber);font-weight:600;margin:2px 0 4px">Always available</div>`;
-    html += HOTLINES.filter(h=>!h.crit? true:true).slice(0,5).map(h=>`
-      <div class="res-item"><h5>${h.label}</h5><div class="meta">${h.note}</div>
-      <a class="call" href="tel:${h.num.replace(/[^0-9]/g,'')}">📞 ${h.num}</a></div>`).join("");
+    html += `<div class="res-head amber">Always available</div>`;
+    html += HOTLINES.slice(0,5).map(h=>`
+      <div class="res-item"><h5>${esc(h.label)}</h5><div class="meta">${esc(h.note)}</div>
+      <a class="call" href="tel:${h.num.replace(/[^0-9]/g,'')}"><span aria-hidden="true">📞</span> ${esc(h.num)}</a></div>`).join("");
   }
+
+  // Curated sources chosen for THIS plan. The map answers "what is physically
+  // near me"; this answers "what should I be looking for at all", which is the
+  // part someone in crisis usually cannot know to ask.
+  const cid = STATE.activeCrisis;
+  const curated = cid ? E.resourcesForCrisis(cid) : (E.RESOURCE_CATALOG._always || []);
+  if(curated.length){
+    const label = cid && flatCrises[cid] ? flatCrises[cid].name : "your situation";
+    html += `<div class="res-head sage">Matched to ${esc(label)}</div>`;
+    html += curated.map(r=>`
+      <div class="res-item">
+        <div class="res-top"><h5>${esc(r.name)}</h5>${r.tag?`<span class="res-tag">${esc(r.tag)}</span>`:""}</div>
+        <div class="meta">${esc(r.what)}</div>
+        <div class="res-why"><b>Why this is suggested:</b> ${esc(r.why)}</div>
+        <a class="call" href="${esc(r.url)}" target="_blank" rel="noopener noreferrer">Official site <span aria-hidden="true">↗</span></a>
+      </div>`).join("");
+    html += `<p class="res-note">These may be able to help. LifeBridge cannot confirm whether you qualify, so check eligibility with each programme directly.</p>`;
+  }
+
   if(places && places.length){
-    html += `<div style="font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--sage);font-weight:600;margin:12px 0 4px">Near you</div>`;
-    html += places.map(p=>`<div class="res-item"><h5>${esc(p.name)}</h5><div class="meta">${esc(p.type)}</div>${p.phone?`<a class="call" href="tel:${p.phone.replace(/[^0-9+]/g,'')}">📞 ${esc(p.phone)}</a>`:""}</div>`).join("");
+    html += `<div class="res-head sage">Near you</div>`;
+    html += places.map(p=>`<div class="res-item"><h5>${esc(p.name)}</h5><div class="meta">${esc(p.type)}</div>${
+      p.phone?`<a class="call" href="tel:${p.phone.replace(/[^0-9+]/g,'')}"><span aria-hidden="true">📞</span> ${esc(p.phone)}</a>`:""}</div>`).join("");
   }
   el.innerHTML = html;
 }
@@ -1135,12 +1496,44 @@ function renderResList(places, withHotlines){
 /* ---------- Chatbot ---------- */
 let chatHistory=[];
 function toggleChat(){
-  const p=document.getElementById("chatPanel");
-  p.classList.toggle("open");
-  if(p.classList.contains("open") && !chatHistory.length){
-    botSay("Hi, I'm here to help you think through whatever you're facing. You can tell me what's going on, or ask about any step in your plan. If you're ever in immediate danger, call 911 or 988 right away.");
-    document.getElementById("chatInput").focus();
+  const panel = document.getElementById("chatPanel");
+  const open = panel.classList.toggle("open");
+  const fab = document.getElementById("chatFab");
+  if(fab) fab.setAttribute("aria-expanded", String(open));
+  if(open && !chatHistory.length){
+    botSay(STATE.lastPlan
+      ? "I can see your recovery plan. Ask me about any step in it, why something is a priority, or what to do first. If you are ever in immediate danger, call 911 or 988 right away."
+      : "I am here to help you think through whatever you are facing. Tell me what is going on, or start an assessment and I can walk you through the plan. If you are ever in immediate danger, call 911 or 988 right away.");
   }
+  if(open){ renderChatSuggestions(); document.getElementById("chatInput").focus(); }
+}
+
+/* Suggestions change with the state of the plan, so the assistant reads as
+   part of the engine rather than a generic chatbot bolted on the side. */
+function renderChatSuggestions(){
+  const el = document.getElementById("chatSuggest");
+  if(!el) return;
+  const p = STATE.lastPlan;
+  let qs;
+  if(!p){
+    qs = ["What can LifeBridge do?", "I am not sure where to start", "What if I am not in a crisis yet?"];
+  }else{
+    const next = E.nextAction(STATE.roadmap);
+    const topPrio = (p.priorities||[])[0];
+    qs = ["What should I do first?"];
+    if(topPrio) qs.push(`Why is ${topPrio.title.toLowerCase()} a priority?`);
+    qs.push("What documents might I need?");
+    if(next) qs.push("What if I cannot complete a step?");
+    qs.push("Who can help me nearby?");
+    if(STATE.roadmap.some(s=>s.done)) qs.push("Why did my LifeBridge Score change?");
+  }
+  el.innerHTML = qs.slice(0,4).map(q=>
+    `<button class="chip" onclick="askChat(this.textContent)">${esc(q)}</button>`).join("");
+}
+function askChat(q){
+  const inp = document.getElementById("chatInput");
+  inp.value = q;
+  sendChat();
 }
 function botSay(t){
   chatHistory.push({role:"bot",t});
@@ -1157,7 +1550,29 @@ async function sendChat(){
   chatHistory.push({role:"me",t:text});
   b.innerHTML += `<div class="msg bot typing" id="typing">thinking…</div>`;
   b.scrollTop=b.scrollHeight;
-  const sys = `You are the LifeBridge AI Assistant, a warm, practical crisis-support guide. Keep replies short (2-4 sentences), concrete, and kind. You are not a lawyer, doctor, or emergency service and you say so if asked for those. If anyone mentions immediate danger or self-harm, gently urge them to call 911 or 988 now. ${STATE.lastPlan?("The person's current situation: "+STATE.lastPlan.crisisType+"."):""}`;
+  const plan = STATE.lastPlan;
+  let planCtx = "";
+  if(plan){
+    const dims = E.currentDimensions(plan, STATE.roadmap);
+    const next = E.nextAction(STATE.roadmap);
+    const prog = E.recoveryProgress(STATE.roadmap);
+    planCtx =
+      `\n\nTHIS PERSON'S ACTIVE RECOVERY PLAN (use it, refer to it specifically):` +
+      `\nSituation: ${plan.crisisType}` +
+      `\nLifeBridge Score: ${STATE.score} of 100 (${E.scoreBand(STATE.score||0).label}).` +
+      `\nStability by area: ${dims.map(d=>`${d.label} ${d.current}`).join(", ")}.` +
+      `\nTop priorities: ${(plan.priorities||[]).map((x,i)=>`${i+1}. ${x.title} (${x.urgency}) because ${x.why}`).join(" ")}` +
+      `\nProgress: ${prog.done} of ${prog.total} actions complete.` +
+      (next ? `\nNext suggested action: ${next.label}.` : "") +
+      (plan.isSample ? `\nNOTE: this is a demo scenario with sample data.` : "");
+  }
+  const sys = `You are the LifeBridge Recovery Assistant, part of the LifeBridge Recovery Engine. You are warm, practical and brief. Keep replies to 2 to 4 sentences, concrete and kind.
+
+You are NOT a lawyer, doctor, therapist, emergency service or government agency, and you say so plainly if asked for those. Never tell someone they qualify for a programme; say they may qualify and should check eligibility.
+
+If anyone mentions immediate danger, abuse or self-harm, gently urge them to call 911 or 988 now, before anything else.
+
+When the person has an active plan, answer using it: name the specific priority, action or area rather than speaking generally. If they ask why their score changed, explain that completing an action raises the area it supports, and that it closes at most half the remaining gap.${planCtx}`;
   const convo = chatHistory.slice(-6).map(m=>(m.role==="me"?"Person: ":"You: ")+m.t).join("\n");
   try{
     const reply = await callAI(convo+"\nYou:", sys, false);
@@ -1176,37 +1591,80 @@ function openEmergency(){
       <div class="emg-num">${h.num}</div>
       <div class="emg-txt"><strong>${h.label}</strong><span>${h.note}</span></div>
     </div>`).join("");
-  document.getElementById("emergencyModal").classList.add("open");
+  openModal("emergencyModal");
 }
 function openAbout(){
   document.getElementById("aboutBody").innerHTML = `
-    <p>LifeBridge helps people navigate life-changing events, the loss of a spouse, a job, a home, a diagnosis, a scam, a legal crisis, or a hard stretch mentally. Describe what you're facing and it maps your immediate needs, weighs the risks, builds a step-by-step recovery plan, points you to real help, and tracks your progress back to stable ground.</p>
+    <p>LifeBridge helps people navigate life-changing events, the loss of a spouse, a job, a home, a diagnosis, a scam, a legal crisis, or a hard stretch mentally. Describe what you are facing and it identifies what needs attention first, builds a recovery roadmap, connects you with relevant support, and tracks your progress toward stability.</p>
 
     <h4 class="about-h">How it works</h4>
-    <p>At the center is <strong>ACRE, the Adaptive Crisis Recovery Engine</strong>. When you describe your situation, it:</p>
+    <p>At the centre is the <strong>LifeBridge Recovery Engine</strong>, which runs the same six steps for every situation:</p>
     <ol class="about-ol">
-      <li><strong>Detects the crisis</strong> and what's actually at stake.</li>
-      <li><strong>Scores risk across several dimensions</strong>, financial, housing, health, safety, and more, instead of a single number.</li>
-      <li><strong>Builds a personalized plan</strong> with today / this week / this month steps, documents to gather, and who can help.</li>
-      <li><strong>Predicts what could come next</strong> and how to get ahead of it, because most tools stop at resources, and the second crisis is often the one that does the real damage.</li>
+      ${E.ENGINE_STEPS.map(s=>`<li><strong>${esc(s.label)}.</strong> ${esc(s.blurb)}</li>`).join("")}
     </ol>
-    <p>Your <strong>LifeBridge Score</strong> (0 = critical, 100 = stable) is drawn as a bridge that completes as you check off recovery steps.</p>
+    <p>One crisis rarely stays in one area of life, so the engine assesses stability across six areas rather than producing a single number: ${E.DIMENSIONS.map(d=>esc(d.label)).join(", ")}. Each roadmap action is linked to the area it supports, which is why completing one moves that area and not the others.</p>
 
     <h4 class="about-h">Get help now</h4>
     <p>In an emergency, call <strong>911</strong>. For free, confidential crisis support 24/7, call or text <strong>988</strong>. For domestic violence, call <strong>1-800-799-7233</strong>. Tap <strong>Emergency</strong> at the top for the full list.</p>
 
-    <h4 class="about-h">What's real vs. sample</h4>
-    <p style="color:var(--ink-2)">Crisis hotlines are accurate and current (US numbers). Nearby services are pulled live from OpenStreetMap when you share your location. Recovery plans and the assistant are generated by a language model and should be confirmed with the official program or a qualified professional.</p>
+    <h4 class="about-h">What is estimated and what is real</h4>
+    <p style="color:var(--ink-2)">Crisis hotlines are accurate and current US numbers. Nearby services come live from OpenStreetMap when you share your location, and the matched resources link to official programme websites. Recovery plans, priorities and the LifeBridge Score are <strong>AI-estimated decision support</strong> generated from what you describe. They are not a clinical, legal, financial or government assessment, and LifeBridge cannot determine whether you qualify for any programme. Always confirm eligibility and deadlines with the official source.</p>
 
     <h4 class="about-h">Your data</h4>
-    <p style="color:var(--ink-2)">You can use LifeBridge without an account, plans stay in this browser. If you sign in, saved plans are stored in Google Cloud Firestore under your account and are readable only by that account: the database rules deny every other read and write by default, and there is no shared or public collection. You can delete any saved plan from <strong>My plans</strong>. A guest session is anonymous, no email, no name, and lives only in this browser until you link a Google account to it.</p>
+    <p style="color:var(--ink-2)">You can use LifeBridge fully without an account, and plans stay in this browser. If you sign in, saved plans are stored in Google Cloud Firestore under your account and are readable only by that account: the database rules deny every other read and write by default. You can delete any saved plan from <strong>My plans</strong>. A guest session is anonymous, with no email and no name, and lives only in this browser until you link a Google account to it. Saved data is encrypted in transit and at rest, but it is not end-to-end encrypted.</p>
 
     <h4 class="about-h">Important</h4>
-    <p style="color:var(--ink-3);font-size:.85rem">LifeBridge is a student project built by <strong>Ansh Saini</strong> at <strong>South Brunswick High School</strong>, for educational and decision-support purposes only. It is <strong>not</strong> a substitute for professional legal, medical, financial, or emergency services, and not an emergency service itself. Always verify program eligibility, deadlines, and advice with the official source before acting.</p>`;
-  document.getElementById("aboutModal").classList.add("open");
+    <p style="color:var(--ink-3);font-size:.85rem">LifeBridge AI is a student-developed decision-support prototype that provides informational guidance and resource recommendations. It does not replace professional legal, medical, financial, mental-health, emergency, or government services, and it is not an emergency service itself. It does not diagnose conditions, determine legal liability, or guarantee benefit eligibility. Built as a student project by Ansh Saini, South Brunswick High School.</p>`;
+  openModal("aboutModal");
 }
-function closeModal(id){ document.getElementById(id).classList.remove("open"); }
+
 document.querySelectorAll(".modal-bg").forEach(m=>m.addEventListener("click",e=>{if(e.target===m)m.classList.remove("open")}));
+
+
+/* ---------- accessibility helpers ---------- */
+/* Status changes that are only visible as a redrawn panel are invisible to a
+   screen reader, so anything meaningful is also spoken here. */
+function announce(msg){
+  const el = document.getElementById("srLive");
+  if(!el) return;
+  el.textContent = "";
+  setTimeout(()=>{ el.textContent = msg; }, 60);
+}
+
+/* Modals trap focus and restore it on close. Without this a keyboard user tabs
+   straight out of the dialog into the page behind it. */
+let modalReturn = null;
+function openModal(id){
+  const bg = document.getElementById(id);
+  if(!bg) return;
+  modalReturn = document.activeElement;
+  bg.classList.add("open");
+  document.body.classList.add("modal-open");
+  const box = bg.querySelector(".modal");
+  if(box){ box.setAttribute("tabindex","-1"); setTimeout(()=>box.focus(), 40); }
+}
+function closeModal(id){
+  const bg = document.getElementById(id);
+  if(bg) bg.classList.remove("open");
+  if(!document.querySelector(".modal-bg.open")) document.body.classList.remove("modal-open");
+  if(modalReturn && modalReturn.focus){ modalReturn.focus(); modalReturn = null; }
+}
+document.addEventListener("keydown", (e)=>{
+  if(e.key !== "Escape") return;
+  const open = document.querySelector(".modal-bg.open");
+  if(open) closeModal(open.id);
+});
+// keep focus inside an open dialog
+document.addEventListener("keydown", (e)=>{
+  if(e.key !== "Tab") return;
+  const open = document.querySelector(".modal-bg.open");
+  if(!open) return;
+  const f = open.querySelectorAll('a[href],button:not([disabled]),input,select,textarea,[tabindex]:not([tabindex="-1"])');
+  if(!f.length) return;
+  const first = f[0], last = f[f.length-1];
+  if(e.shiftKey && document.activeElement === first){ e.preventDefault(); last.focus(); }
+  else if(!e.shiftKey && document.activeElement === last){ e.preventDefault(); first.focus(); }
+});
 
 /* ---------- helpers ---------- */
 function esc(s){ return String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
@@ -1403,7 +1861,7 @@ function openAuth(){
   if(!cloudOn()){
     opts.innerHTML = `<div class="empty-note">${esc(cloudMsg())}</div>`;
     note.innerHTML = "";
-    document.getElementById("authModal").classList.add("open");
+    openModal("authModal");
     return;
   }
   const guest = !!(CLOUD_USER && CLOUD_USER.isAnonymous);
@@ -1419,7 +1877,7 @@ function openAuth(){
       <span>${guest ? "Everything you've saved as a guest comes with you, and you can open it from any device." : "Sign in once and your plans follow you to any device."}</span></span>
     </button>`;
   note.innerHTML = `<strong style="color:var(--ink-2)">What's stored:</strong> the situation you describe, the plan LifeBridge builds from it, and which steps you've checked off. It's readable only by your own account, the database rules deny everything else by default. You can delete any plan at any time.`;
-  document.getElementById("authModal").classList.add("open");
+  openModal("authModal");
 }
 
 async function doDemoSignIn(){
@@ -1462,7 +1920,7 @@ function openAccount(){
       <button class="btn btn-ghost" id="signOutBtn" onclick="doSignOut()">Sign out</button>
     </div>
     ${u.isAnonymous ? `<div class="auth-note">Signing out of a guest session ends it for good, there's no email to sign back in with. Link Google first if you want to keep these plans.</div>` : ""}`;
-  document.getElementById("acctModal").classList.add("open");
+  openModal("acctModal");
 }
 
 // Two-step instead of confirm(): a native dialog would block the page, and
@@ -1516,6 +1974,7 @@ async function savePlanToAccount(){
       pillarId:      crisis && crisis._pillar ? crisis._pillar.id : null,
       situationText: STATE.situationText || "",
       source:        STATE.source || "ai",
+      isSample:      !!STATE.isSample,
       score:         STATE.score,
       plan:          STATE.lastPlan,
       roadmap:       STATE.roadmap,
@@ -1582,23 +2041,37 @@ async function renderPlans(){
 
   sync.innerHTML = `${plans.length} saved`;
   if(!plans.length){
-    out.innerHTML = `<div class="empty-note"><p style="margin-bottom:14px">Nothing saved yet. Build a plan, then choose “Save this plan”.</p><button class="btn btn-amber cta-lg" onclick="go('navigator')">Start an assessment →</button></div>`;
+    out.innerHTML = `<div class="empty-note"><p style="margin-bottom:14px">You do not have a saved recovery plan yet.</p><div class="cta-row" style="justify-content:center"><button class="btn btn-amber cta-lg" onclick="go('navigator')">Start my recovery plan</button><button class="btn btn-ghost cta-lg" onclick="runDemo()">Try demo</button></div></div>`;
     return;
   }
 
   out.innerHTML = `<div class="plan-cards">` + plans.map(p=>{
-    const pr  = p.progress || {done:0,total:(p.roadmap||[]).length,pct:0};
-    const cur = p.id === STATE.cloudPlanId;
-    const snip = p.situationText || (p.plan && p.plan.acknowledgement) || "";
+    const pr   = p.progress || {done:0,total:(p.roadmap||[]).length,pct:0};
+    const cur  = p.id === STATE.cloudPlanId;
+    const norm = E.normalizePlan(p.plan || {});
+    const base = E.baselineScore(norm);
+    const now  = p.score == null ? base : clamp(p.score);
+    const next = E.nextAction(p.roadmap || []);
+    const band = now == null ? null : E.scoreBand(now);
     return `<div class="plan-card">
       <h4>${esc(p.title || "Recovery plan")}</h4>
-      <div class="when">${esc(fmtWhen(p.updatedAt))}${cur ? " · open now" : ""}${p.source==="fallback" ? " · offline framework" : ""}</div>
-      <div class="snip">${esc(snip)}</div>
-      <div class="mini"><i style="width:${clamp(pr.pct)}%"></i></div>
+      <div class="when">Updated ${esc(fmtWhen(p.updatedAt))}${cur ? " \u00b7 open now" : ""}${p.source==="fallback" ? " \u00b7 offline framework" : ""}</div>
+      <div class="pc-stats">
+        <div class="pc-stat">
+          <span class="pc-num" style="color:${dimColor(now==null?60:now)}">${
+            base!=null && now!=null && now!==base ? `${base} \u2192 ${now}` : (now==null?"\u00b7":now)}</span>
+          <small>LifeBridge Score${band?` \u00b7 ${esc(band.label)}`:""}</small>
+        </div>
+        <div class="pc-stat">
+          <span class="pc-num">${clamp(pr.pct)}%</span>
+          <small>Recovery \u00b7 ${pr.done||0}/${pr.total||0} actions</small>
+        </div>
+      </div>
+      ${next ? `<div class="pc-next"><b>Next step</b><span>${esc(next.label)}</span></div>`
+             : `<div class="pc-next"><b>Next step</b><span>All actions complete.</span></div>`}
       <div class="pfoot">
-        <span class="pct">${clamp(pr.pct)}% · ${pr.done||0}/${pr.total||0} steps</span>
         <span class="acts">
-          <button class="mini-btn" onclick="loadSavedPlan('${esc(p.id)}')">Open</button>
+          <button class="mini-btn" onclick="loadSavedPlan('${esc(p.id)}')">Continue plan</button>
           <button class="mini-btn danger" onclick="deleteSavedPlan('${esc(p.id)}', this)">Delete</button>
         </span>
       </div>
@@ -1611,19 +2084,43 @@ async function loadSavedPlan(id, opts){
   try{
     const p = await window.LBCloud.getPlan(id);
     if(!p){ toast("That plan is no longer there."); renderPlans(); return; }
-    const plan = p.plan || {};
-    plan.crisisType   = p.crisisType || p.title || plan.crisisType;
+
+    // Plans saved by an earlier version have a different shape. normalizePlan
+    // converts them, so someone who saved a plan last week still opens it into
+    // the current experience rather than a broken screen.
+    const plan = E.normalizePlan(p.plan || {});
+    if(p.crisisType) plan.crisisType = p.crisisType;
+    if(p.title && !plan.crisisType) plan.crisisType = p.title;
+
     STATE.lastPlan      = plan;
-    STATE.roadmap       = (p.roadmap || []).map(s=>({label:s.label, detail:s.detail, done:!!s.done}));
-    STATE.score         = p.score == null ? STATE.score : p.score;
     STATE.activeCrisis  = p.crisisId || null;
     STATE.situationText = p.situationText || "";
-    STATE.source        = p.source || "ai";
+    STATE.source        = p.source === "fallback" ? "fallback" : "ai";
+    STATE.isSample      = !!p.isSample || !!plan.isSample;
     STATE.cloudPlanId   = p.id;
-    saveState();
-    renderPlan(plan, STATE.source === "fallback");
-    updateScoreUI();
-    if(!opts.silent){ go("roadmap"); toast("Plan loaded."); }
+
+    const saved = (p.roadmap || []);
+    if(saved.length){
+      // older roadmaps have no bucket or dimension, so re-derive them from the
+      // freshly normalized plan by matching on the action text
+      STATE.roadmap = saved.map(s=>{
+        const match = (plan.actions||[]).find(a=>a.task === s.label);
+        return {
+          label: s.label,
+          detail: s.detail || (match ? match.why : ""),
+          when: s.when || (match ? match.when : E.normalizeWhen(s.detail)),
+          dimension: s.dimension || (match ? match.dimension : E.normalizeDimension(s.label)),
+          done: !!s.done,
+          doneAt: s.doneAt || null,
+        };
+      });
+    }else{
+      STATE.roadmap = E.seedRoadmapFromPlan(plan);
+    }
+
+    refreshScore();
+    renderPlan(plan, STATE.source === "fallback" ? "fallback" : "ai");
+    if(!opts.silent){ go("roadmap"); toast("Plan loaded."); announce("Saved plan loaded."); }
   }catch(e){ if(!opts.silent) toast(e.message || "Couldn't open that plan."); }
 }
 
@@ -1689,9 +2186,30 @@ function demoBridge(){
   }, 26);
 }
 
+function renderHowSteps(){
+  const el = document.getElementById("howSteps");
+  if(!el) return;
+  el.innerHTML = E.ENGINE_STEPS.map((s,i)=>`
+    <li class="step-card">
+      <span class="step-n" aria-hidden="true">${i+1}</span>
+      <strong>${esc(s.label)}</strong>
+      <span>${esc(s.blurb)}</span>
+    </li>`).join("");
+}
+
+function updateResSub(){
+  const el = document.getElementById("resSub");
+  if(!el) return;
+  const c = STATE.activeCrisis ? flatCrises[STATE.activeCrisis] : null;
+  el.textContent = c
+    ? `Crisis lines are always live. Sources below are matched to ${c.name.toLowerCase()}, plus services mapped near you.`
+    : "Crisis lines are always live. Location-based services depend on your area.";
+}
+
 function init(){
   renderPillars();
   renderNavChips();
+  renderHowSteps();
   renderAccount();      // no-op until the cloud module reports in
   if(STATE.score!=null){
     updateScoreUI(); // returning user, show their real progress
