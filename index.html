@@ -285,26 +285,16 @@ textarea.navinput:focus{border-color:var(--amber);outline:none}
 }
 .gate[hidden]{display:none}
 body.gated{overflow:hidden}
-.gate-card{max-width:520px;width:100%;margin:auto}
-.gate-brand{display:flex;align-items:center;gap:12px;justify-content:center;margin-bottom:26px}
+.gate-card{max-width:400px;width:100%;margin:auto}
+.gate-brand{display:flex;align-items:center;gap:12px;justify-content:center;margin-bottom:34px}
+/* Label-only buttons on the gate: centred, single line, no description. */
+.gate .auth-opt{justify-content:center;gap:11px;padding:16px 18px;text-align:center}
+.gate .auth-opt strong{font-size:.98rem}
+.gate .auth-opt .ico{width:30px;height:30px;border-radius:8px}
 .gate-brand svg{width:44px;height:44px;flex:none}
 .gate-name{font-family:var(--serif);font-weight:600;font-size:1.5rem;letter-spacing:-.01em}
 .gate-name b{color:var(--amber)}
 .gate-tag{font-size:.66rem;color:var(--ink-3);letter-spacing:.16em;text-transform:uppercase;margin-top:-3px}
-.gate-eyebrow{font-size:.72rem;letter-spacing:.16em;text-transform:uppercase;color:var(--amber);font-weight:600;text-align:center;margin-bottom:10px}
-.gate h1{font-family:var(--serif);font-weight:600;font-size:clamp(1.5rem,4.4vw,2rem);line-height:1.18;letter-spacing:-.02em;text-align:center;margin-bottom:12px}
-.gate h1 em{font-style:italic;color:var(--amber-soft)}
-.gate-sub{color:var(--ink-2);font-size:.94rem;line-height:1.6;text-align:center;margin:0 auto 26px;max-width:430px}
-.gate-note{font-size:.78rem;color:var(--ink-3);line-height:1.55;border-top:1px solid var(--line-soft);margin-top:20px;padding-top:16px}
-.gate-foot{display:flex;align-items:center;justify-content:center;gap:14px;flex-wrap:wrap;margin-top:18px}
-.gate-sos{
-  display:inline-flex;align-items:center;gap:7px;font-size:.83rem;font-weight:600;
-  color:var(--danger);background:var(--danger-bg);border:1px solid rgba(232,112,95,.4);
-  border-radius:var(--r-sm);padding:9px 15px;transition:.16s;
-}
-.gate-sos:hover{border-color:var(--danger);background:rgba(232,112,95,.16)}
-.gate-about{font-size:.83rem;color:var(--ink-3);text-decoration:underline;text-underline-offset:3px;cursor:pointer}
-.gate-about:hover{color:var(--ink-2)}
 .gate-err{
   display:none;margin-top:14px;font-size:.84rem;line-height:1.5;color:var(--danger);
   background:var(--danger-bg);border:1px solid rgba(232,112,95,.35);
@@ -421,15 +411,11 @@ body.gated{overflow:hidden}
       </div>
     </div>
 
-    <div class="gate-eyebrow">When everything changes at once</div>
-    <h1>You don't have to figure out <em>what comes next</em> alone.</h1>
-    <p class="gate-sub">Tell LifeBridge what you're facing. It maps your immediate needs, weighs the risks, builds a step-by-step recovery plan, and points you to real help. Choose how you'd like to start.</p>
-
     <button class="auth-opt" id="gateGuest" onclick="gateSignIn('demo')">
       <span class="ico">
         <svg width="17" height="17" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM4 20c0-3.3 3.6-5.5 8-5.5s8 2.2 8 5.5" stroke="var(--sage)" stroke-width="2" stroke-linecap="round"/></svg>
       </span>
-      <span><strong>Continue as a guest</strong><span>No email, no password, nothing new to remember. Your plans start saving right away.</span></span>
+      <span><strong>Continue as a guest</strong></span>
     </button>
 
     <button class="auth-opt" id="gateGoogle" onclick="gateSignIn('google')">
@@ -441,21 +427,12 @@ body.gated{overflow:hidden}
           <path fill="#EA4335" d="M24 10.75c3.23 0 6.13 1.11 8.41 3.29l6.31-6.31C34.91 4.18 29.93 2 24 2 15.4 2 7.96 6.93 4.34 14.12l7.35 5.7c1.73-5.2 6.58-9.07 12.31-9.07z"/>
         </svg>
       </span>
-      <span><strong>Continue with Google</strong><span>Sign in once and your plans follow you to any device.</span></span>
+      <span><strong>Continue with Google</strong></span>
     </button>
 
+    <!-- Only ever visible if a sign-in attempt fails. Without it a failure is
+         silent, which on a two-button screen leaves no way to recover. -->
     <div class="gate-err" id="gateErr"></div>
-
-    <div class="gate-note"><strong style="color:var(--ink-2)">What's stored:</strong> the situation you describe, the plan LifeBridge builds from it, and which steps you've checked off. It is readable only by your own account, and you can delete any plan at any time.</div>
-
-    <div class="gate-foot">
-      <button class="gate-sos" onclick="openEmergency()">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 2 2 20h20L12 2z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M12 9v5M12 17v.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-        Need help right now
-      </button>
-      <a class="gate-about" onclick="openAbout()" role="button" tabindex="0"
-         onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openAbout()}">About &amp; safety</a>
-    </div>
   </div>
 </div>
 
