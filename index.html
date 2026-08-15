@@ -178,6 +178,14 @@ textarea.navinput{
 textarea.navinput:focus{border-color:var(--amber);outline:none}
 .chip-row{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0}
 .chip{font-size:.8rem;padding:7px 13px;border-radius:22px;background:var(--panel-2);border:1px solid var(--line);color:var(--ink-2);transition:.16s}
+/* Optional first fork for situations where the answer changes the whole plan,
+   such as whether substance use is the writer's own or someone else's. */
+.nav-branch{margin:0 0 14px}
+.nav-branch p{font-size:.82rem;color:var(--ink-3);margin-bottom:8px}
+.nav-branch-row{display:flex;gap:8px;flex-wrap:wrap}
+.branch-opt{font-size:.86rem;font-weight:600;padding:10px 16px;min-height:42px;border-radius:10px;background:var(--panel-2);border:1px solid var(--line);color:var(--ink-2);transition:.16s;cursor:pointer}
+.branch-opt:hover{border-color:var(--amber);color:var(--ink)}
+.branch-opt[aria-pressed="true"]{border-color:var(--amber);background:rgba(244,168,74,.1);color:var(--ink)}
 .chip:hover{border-color:var(--amber);color:var(--ink)}
 
 /* ---------- Plan output ---------- */
@@ -735,6 +743,7 @@ body.gated{overflow:hidden}
     <div class="nav-panel">
       <h3 id="navTitle">Tell LifeBridge what's happening</h3>
       <p class="hint" id="navHint">Write it however it comes out, a sentence or a paragraph. The more you share about your situation, the more specific your plan.</p>
+      <div class="nav-branch" id="navBranch" hidden></div>
       <textarea class="navinput" id="navInput" placeholder="e.g. My husband passed away last week. I have two kids, no income coming in, and rent is due at the end of the month."></textarea>
       <div class="chip-row" id="navChips"></div>
       <button class="btn btn-amber cta-lg" id="navGo" onclick="runNavigator()">
@@ -892,6 +901,9 @@ const HOTLINES = [
   // Dial 988 then press 1. The old 1-800-273-8255 number was the pre-988
   // Lifeline line and should not be presented as the primary contact.
   {num:"988", label:"Veterans Crisis Line", note:"Dial 988 then press 1. Text 838255", crit:false},
+  // SAMHSA's own line, not a treatment centre's referral desk. Free and
+  // confidential whether the call is about yourself or about someone else.
+  {num:"1-800-662-4357", label:"SAMHSA National Helpline", note:"Alcohol and drugs. Free, confidential, 24/7, English and Spanish", crit:false},
   {num:"211", label:"211 Community Resources", note:"Food, housing, utilities, local aid", crit:false},
   // The Disaster Distress Helpline is 1-800-985-5990, not the SAMHSA main line.
   {num:"1-800-985-5990", label:"Disaster Distress Helpline", note:"Call or text. 24/7 crisis counseling for disaster-related distress", crit:false},
@@ -951,6 +963,24 @@ const PILLARS = [
         tags:["Support","Counseling","Check-ins"], dims:["Emotional","Isolation","Daily function","Safety"], safety:true,
         docs:["Insurance / coverage info","List of current medications","Therapist / provider contacts"],
         helpers:["988 Suicide & Crisis Lifeline","SAMHSA treatment locator","Peer support groups","Sliding-scale counseling"]},
+      /* Labelled "substance use" rather than "addiction" or "drug problem" on
+         purpose. The person most likely to need this module is also the one
+         most likely to close the tab rather than tap a word that judges them.
+         The branch exists because a parent and the person using need different
+         first steps, and asking is cheaper than guessing wrong. */
+      {id:"substance", name:"Substance use & recovery", blurb:"Alcohol or drugs, whether it is you or someone you love.",
+        tags:["Treatment","Withdrawal safety","Family"],
+        dims:["Health","Safety","Family","Work or legal","Money"], safety:true,
+        branch:{
+          question:"Who is this about? It changes what comes first.",
+          options:[
+            {id:"self",  label:"Mostly me",
+             seed:"This is about my own substance use. "},
+            {id:"other", label:"Someone I care about",
+             seed:"This is about someone I care about, not me. I am trying to work out what I can do. "},
+          ]},
+        docs:["Insurance card & policy","Every substance and rough amount, including anything prescribed","Any earlier treatment or detox records","Prescriber and pharmacy contacts"],
+        helpers:["SAMHSA National Helpline, 1-800-662-4357","FindTreatment.gov","Nar-Anon and Al-Anon family groups","SMART Recovery"]},
     ]},
   { id:"education", icon:"🎓", name:"Education & Youth", desc:"Support for students facing hardship.",
     crises:[
@@ -1156,9 +1186,47 @@ function startCrisis(id){
   document.getElementById("navInput").value = "";
   document.getElementById("navInput").placeholder = "Describe your situation with "+c.name.toLowerCase()+"…";
   document.getElementById("navChips").innerHTML = c.dims.map(d=>`<button class="chip" onclick="addChip('${d.replace(/'/g,"")}')">${d}</button>`).join("");
+  renderBranch(c);
   document.getElementById("planOut").innerHTML = "";
   go("navigator");
 }
+
+/* Some situations split at the first question. Substance use is the clear one:
+   what a parent should do first and what the person using should do first are
+   different plans, and a wrong guess sends someone down the wrong one. This is
+   a shortcut rather than a gate, so anyone who would rather just type still
+   can, and the fork never appears for the situations that do not have one. */
+function renderBranch(c){
+  const el = document.getElementById("navBranch");
+  if(!el) return;
+  if(!c || !c.branch){ el.hidden = true; el.innerHTML = ""; return; }
+  el.hidden = false;
+  el.innerHTML = `<p>${esc(c.branch.question)}</p>
+    <div class="nav-branch-row" role="group" aria-label="${esc(c.branch.question)}">
+      ${c.branch.options.map((o,i)=>
+        `<button class="branch-opt" type="button" aria-pressed="false"
+           onclick="pickBranch('${esc(c.id)}',${i})">${esc(o.label)}</button>`).join("")}
+    </div>`;
+}
+
+/* Replaces any previous seed rather than stacking them, so changing your mind
+   does not leave the plan describing two different people. */
+function pickBranch(crisisId, i){
+  const c = flatCrises[crisisId];
+  if(!c || !c.branch) return;
+  const opt = c.branch.options[i];
+  if(!opt) return;
+  const input = document.getElementById("navInput");
+  let text = input.value;
+  c.branch.options.forEach(o=>{ text = text.split(o.seed).join(""); });
+  input.value = opt.seed + text.trimStart();
+  document.querySelectorAll("#navBranch .branch-opt").forEach((b,n)=>
+    b.setAttribute("aria-pressed", String(n===i)));
+  input.focus();
+  input.setSelectionRange(input.value.length, input.value.length);
+  announce(opt.label + " selected. Add anything else that matters, then build your plan.");
+}
+
 function addChip(t){
   const el = document.getElementById("navInput");
   el.value = (el.value ? el.value.trim()+" " : "") + t+" is a concern. ";
@@ -1299,6 +1367,7 @@ function resetNavigator(){
   input.placeholder = "e.g. My husband passed away last week. I have two kids, no income coming in, and rent is due at the end of the month.";
   document.getElementById("planOut").innerHTML = "";
   document.getElementById("navChips").innerHTML = "";
+  renderBranch(null);   // a general assessment has no fork to offer
   renderNavChips();
 }
 
@@ -1419,6 +1488,7 @@ function runDemo(id){
   document.getElementById("navTitle").textContent = `Demo: ${d.label}`;
   document.getElementById("navHint").textContent =
     "A written example, not a real person. It runs through exactly the same Recovery Engine your own situation would.";
+  renderBranch(null);   // the scenario already says who it is about
   runNavigator({ text: d.text, sample: true, demoPlan: d.plan });
 }
 

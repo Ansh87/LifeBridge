@@ -110,10 +110,18 @@ function matchDimension(name) {
 
   // Specific school contacts before the generic care vocabulary, so "school
   // counselor" lands on family rather than on health via "counsel".
-  if (/(school counsel|family liaison|school office|\bteacher\b|principal|daycare|childcare)/.test(s)) return "family";
+  // Nar-Anon and Al-Anon are here rather than under health: they support the
+  // family around someone's substance use, not the person using.
+  if (/(school counsel|family liaison|school office|\bteacher\b|principal|daycare|childcare|nar-?anon|al-?anon|alateen)/.test(s)) return "family";
 
   // Physical safety and the reporting that goes with it, ahead of "legal".
-  if (/(police|theft|stolen|robbed|assault|abuse|violence|danger|threat|unsafe|restraining|\b911\b|\b988\b|crisis line)/.test(s)) return "safety";
+  // Overdose belongs here and not under health: it is a survival event with
+  // minutes on the clock, and it must outrank every treatment word below.
+  if (/(police|theft|stolen|robbed|assault|abuse|violence|danger|threat|unsafe|restraining|\b911\b|\b988\b|crisis line|overdose|naloxone|narcan|fentanyl|never use alone)/.test(s)) return "safety";
+
+  // Substance use, ahead of the generic financial and housing vocabulary so
+  // "treatment costs" and "sober living" are not read as money or housing.
+  if (/(substance use|\bdetox|withdrawal symptom|medically supervised|\brehab\b|inpatient|outpatient|methadone|buprenorphine|suboxone|naltrexone|vivitrol|\bsober\b|sobriety|relapse|\bsamhsa\b|findtreatment|smart recovery|narcotics anonymous|alcoholics anonymous|\balcohol|drinking|\bopioid|heroin|\bmeth\b|cocaine|harm reduction)/.test(s)) return "health";
 
   if (/(\bhous|\brent\b|\brental|evict|landlord|mortgage|\blease\b|shelter|\broof\b|repair|contractor|\bfema\b|red cross)/.test(s)) return "housing";
   if (/(financ|\bmoney\b|income|\bwages?\b|\bjobs?\b|employ|\bdebts?\b|benefit|\bbills?\b|payment|\bbanks?\b|\bcards?\b|\bclaims?\b|insur|fraud|credit|\bloans?\b|survivor|deposit|refund|reimburse)/.test(s)) return "financial";
@@ -167,7 +175,15 @@ Rules:
 - "priorities" MUST contain exactly 3, ordered most urgent first, and must reflect THIS person's circumstances rather than generic advice for the category.
 - "actions": 4 to 8 items, spread across the time buckets. Include a "Do now" item only when something is genuinely urgent.
 - 3 to 5 items for documents, helpers and risksToWatch.
-- If there is any sign of immediate physical danger, abuse, or self-harm: make the first priority contacting emergency services or the 988 Suicide and Crisis Lifeline, set safety stability low, and put a "Do now" action first.`;
+- If there is any sign of immediate physical danger, abuse, or self-harm: make the first priority contacting emergency services or the 988 Suicide and Crisis Lifeline, set safety stability low, and put a "Do now" action first.
+
+When alcohol or drugs are any part of the situation, these rules override everything above:
+- NEVER advise stopping alcohol or benzodiazepines (Xanax, Valium, Ativan, Klonopin) abruptly or without medical supervision. Unsupervised withdrawal from either can cause seizures and can kill. Route to a medically supervised detox, an emergency department or their doctor, and say plainly why it matters. This applies even if the person asks how to quit on their own.
+- If there is any risk of overdose, make naloxone (Narcan) and calling 911 a "Do now" action. Naloxone is sold without a prescription at US pharmacies and given free by many health departments. Note that Good Samaritan laws in most states protect someone who calls 911 for an overdose.
+- Write about the person, not the label. Use "substance use", "someone in recovery", "someone still using". Never write "abuse", "addict", "alcoholic", "junkie", "clean" or "dirty".
+- Treatment costs money and waitlists are real. Never say treatment is free, covered, or available now. Point to the SAMHSA National Helpline, 1-800-662-4357, and FindTreatment.gov, both of which are free and confidential.
+- Relapse is common and is not failure. Never write an action or a risk that frames it as the person's fault or as the end of their progress.
+- When the situation is about SOMEONE ELSE rather than the person writing, do not produce ultimatum or intervention scripts, and do not promise that any approach will make the other person stop. Build the plan around what this person can actually control: their own support (Nar-Anon, Al-Anon, Alateen for teenagers), keeping naloxone available, protecting the household's money and the other children, and staying in contact. Score "family" and "health" from the writer's own stability, not the other person's.`;
 
 /* Reassessment. The engine is given the original description, what the previous
    assessment concluded, what the person has actually completed, and what they
@@ -997,6 +1013,34 @@ const RESOURCE_CATALOG = {
       why: "Children grieve differently from adults and often need their own support alongside a parent's.",
       url: "https://www.dougy.org", tag: "Health" },
   ],
+  /* Ordered so that the two things that keep someone alive, a free confidential
+     line and naloxone, come before anything that asks them to plan ahead. */
+  substance: [
+    { name: "SAMHSA National Helpline", what: "1-800-662-4357. Free, confidential, 24/7, English and Spanish",
+      why: "A federal treatment referral line that will talk through options with you whether it is about you or someone else. It does not ask for insurance to talk to you.",
+      url: "https://www.samhsa.gov/find-help/helplines/national-helpline", tag: "Health" },
+    { name: "Naloxone (Narcan)", what: "Overdose reversal spray, sold without a prescription in US pharmacies",
+      why: "It reverses an opioid overdose in minutes and is safe to give even if you turn out to be wrong. Many health departments hand it out free, and most states have Good Samaritan laws protecting whoever calls 911.",
+      url: "https://www.samhsa.gov/substance-use/harm-reduction", tag: "Safety" },
+    { name: "FindTreatment.gov", what: "SAMHSA's confidential treatment locator",
+      why: "Filters by what you can actually reach and pay for, including sliding scale and Medicaid, rather than showing whoever advertises hardest.",
+      url: "https://findtreatment.gov", tag: "Health" },
+    { name: "Never Use Alone", what: "1-800-484-3731. Overdose prevention line, 24/7",
+      why: "An operator stays on the phone and sends EMS if you stop responding. Most fatal overdoses happen with nobody else in the room.",
+      url: "https://neverusealone.com", tag: "Safety" },
+    { name: "Nar-Anon Family Groups", what: "Peer support for families and friends affected by someone's drug use",
+      why: "Built for the person watching it happen rather than the person using, which is a different problem needing different support.",
+      url: "https://www.nar-anon.org/find-a-meeting", tag: "Family" },
+    { name: "Al-Anon and Alateen", what: "Peer support for families affected by someone's drinking, with Alateen for teenagers",
+      why: "Alateen exists because children in these households carry it differently from adults and rarely have anywhere of their own to say so.",
+      url: "https://al-anon.org/al-anon-meetings", tag: "Family" },
+    { name: "SMART Recovery", what: "Free, evidence-informed recovery meetings, in person and online",
+      why: "A secular alternative for anyone who has bounced off a twelve-step room, and it runs a separate Family and Friends programme.",
+      url: "https://smartrecovery.org", tag: "Health" },
+    { name: "Medicaid and marketplace coverage", what: "Substance use treatment is an essential health benefit",
+      why: "Losing a job or income can change what you qualify for, and coverage often decides which treatment doors will actually open.",
+      url: "https://www.healthcare.gov/coverage/mental-health-substance-abuse-coverage", tag: "Income" },
+  ],
   disaster: [
     { name: "FEMA disaster assistance", what: "Federal help after a declared disaster",
       why: "May cover temporary housing, home repair and other disaster-caused needs.",
@@ -1206,11 +1250,21 @@ function fallbackPlan(text, crisis) {
   const lower = String(text || "").toLowerCase();
   const safetyFlag = /(hurt|hit|abuse|threat|unsafe|afraid|scared|violent|kill|suicid|harm)/.test(lower);
 
+  /* The offline fallback is generic everywhere else, and generic is fine
+     everywhere else. It is not fine here. Someone who reaches this screen
+     during an outage and is trying to stop drinking needs to be told, before
+     anything about paperwork, that stopping abruptly can kill them. So this
+     one category gets real content even when the planner is down. */
+  const substanceFlag = (c.id === "substance") ||
+    /(alcohol|drinking|\bdrugs?\b|\bopioid|heroin|fentanyl|\bmeth\b|cocaine|\bpills\b|\bsober\b|sobriety|relapse|overdose|withdrawal|\bdetox|\brehab\b|addict)/.test(lower);
+
   const dims = [
     { id: "housing",   score: 50, why: "Not assessed while the planner is offline." },
     { id: "financial", score: 45, why: "Not assessed while the planner is offline." },
     { id: "food",      score: 60, why: "Not assessed while the planner is offline." },
-    { id: "health",    score: 60, why: "Not assessed while the planner is offline." },
+    { id: "health",    score: substanceFlag ? 40 : 60, why: substanceFlag
+        ? "Flagged because substance use is part of what you described. This is a placeholder, not an assessment."
+        : "Not assessed while the planner is offline." },
     { id: "family",    score: 60, why: "Not assessed while the planner is offline." },
     { id: "safety",    score: safetyFlag ? 25 : 80, why: safetyFlag
         ? "Your description mentions possible danger, so this is flagged for attention."
@@ -1222,6 +1276,19 @@ function fallbackPlan(text, crisis) {
     actions.push({ when: "Do now", dimension: "safety",
       task: "If anyone is in immediate danger, call 911. For crisis support call or text 988.",
       why: "Safety comes before any recovery planning." });
+  }
+  if (substanceFlag) {
+    actions.push(
+      { when: "Do now", dimension: "health",
+        task: "Do not stop drinking or stop benzodiazepines suddenly on your own. Speak to a doctor or an emergency department first",
+        why: "Withdrawal from alcohol and from benzodiazepines such as Xanax, Valium, Ativan and Klonopin can cause seizures and can be fatal. Coming off either is safe with medical supervision and genuinely dangerous without it." },
+      { when: "Do now", dimension: "safety",
+        task: "Get naloxone (Narcan) and keep it where it can be reached, if opioids are anywhere in this situation",
+        why: "It reverses an opioid overdose in minutes, is sold without a prescription, and is safe to give even if you turn out to be wrong. Most states protect whoever calls 911 for an overdose." },
+      { when: "Today", dimension: "health",
+        task: "Call the SAMHSA National Helpline on 1-800-662-4357",
+        why: "Free, confidential and staffed around the clock, in English and Spanish. They will talk it through whether this is about you or about someone else, and they do not ask for insurance to talk to you." },
+    );
   }
   actions.push(
     { when: "Today", dimension: "financial", task: "Call 211, or text your ZIP code to 898211, to reach local emergency resources",
@@ -1237,20 +1304,29 @@ function fallbackPlan(text, crisis) {
     crisisType: c.name,
     acknowledgement:
       "The live planner is unavailable right now, so this is a general starting framework rather than a personalized assessment. The steps below still hold for most situations, and the resources can connect you with a real person who can look at your specific circumstances.",
+    // Built rather than hardcoded, so a substance situation does not lead with
+    // "gather your paperwork" while the urgent medical point sits below the
+    // fold. Exactly 3 survive, most urgent first.
     priorities: [
-      { title: safetyFlag ? "Make sure everyone is safe" : "Reach a local referral line",
-        urgency: "High", dimension: safetyFlag ? "safety" : "financial",
-        why: safetyFlag ? "Your description mentions possible danger."
-                        : "A local specialist can identify the programs that apply where you live.",
-        nextStep: safetyFlag ? "Call 911 if anyone is in immediate danger, or 988 for crisis support."
-                             : "Call 211, or text your ZIP code to 898211." },
+      safetyFlag ? {
+        title: "Make sure everyone is safe", urgency: "High", dimension: "safety",
+        why: "Your description mentions possible danger.",
+        nextStep: "Call 911 if anyone is in immediate danger, or 988 for crisis support." } : null,
+      substanceFlag ? {
+        title: "Get medical advice before changing anything", urgency: "High", dimension: "health",
+        why: "Stopping alcohol or benzodiazepines suddenly can cause seizures and can be fatal, so this comes before every other step here.",
+        nextStep: "Call the SAMHSA National Helpline on 1-800-662-4357, free and confidential, or speak to a doctor." } : null,
+      (!safetyFlag && !substanceFlag) ? {
+        title: "Reach a local referral line", urgency: "High", dimension: "financial",
+        why: "A local specialist can identify the programs that apply where you live.",
+        nextStep: "Call 211, or text your ZIP code to 898211." } : null,
       { title: "Gather your key documents", urgency: "Medium", dimension: "financial",
         why: "Nearly every form of assistance requires the same core paperwork.",
         nextStep: "Start with photo ID, proof of income and any relevant policy or agreement." },
       { title: "Map your deadlines", urgency: "Medium", dimension: "housing",
         why: "Knowing what is due when prevents a second problem forming behind the first.",
         nextStep: "List every payment and appointment due this month, soonest first." },
-    ],
+    ].filter(Boolean).slice(0, 3),
     dimensions: dims,
     actions,
     documents: (c.docs && c.docs.length) ? c.docs
@@ -1259,10 +1335,14 @@ function fallbackPlan(text, crisis) {
       who: typeof h === "string" ? h : (h.who || ""), what: "", how: "See Help Near You to find the nearest option.",
     })),
     risksToWatch: [
+      substanceFlag ? {
+        risk: "Trying to stop on your own because getting into treatment is taking too long",
+        why: "Waitlists are real, and the wait is exactly when people decide to do it themselves.",
+        prevent: "Ask the helpline about medically supervised detox and interim options while you wait, and keep naloxone available in the meantime." } : null,
       { risk: "A second obligation slipping while you handle the first",
         why: "Crises rarely stay contained to one area of life.",
         prevent: "List every deadline this month and work from the soonest." },
-    ],
+    ].filter(Boolean),
   });
 }
 
