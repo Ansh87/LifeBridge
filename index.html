@@ -307,6 +307,15 @@ body.modal-open{overflow:hidden}
 .prio-why,.prio-next{font-size:.85rem;color:var(--ink-2);line-height:1.5;margin-top:3px}
 .prio-why b,.prio-next b{color:var(--ink-3);font-weight:600}
 .dim-chip.muted{opacity:.72}
+.dim-actions{color:var(--ink-2)}
+.score-prev{color:var(--ink-3);font-size:.6em;font-weight:600}
+.score-arrow{color:var(--ink-3);font-size:.55em;margin:0 .28em}
+.step-tag{font-size:.62rem;letter-spacing:.08em;text-transform:uppercase;font-weight:700;padding:2px 7px;border-radius:20px;vertical-align:middle;margin-left:6px}
+.step-tag.new{background:rgba(127,201,160,.16);color:var(--sage)}
+.step-tag.old{background:rgba(116,136,160,.16);color:var(--ink-3)}
+.rm-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:18px}
+.reassess-note{font-size:.82rem;color:var(--ink-3);line-height:1.5;margin-top:10px}
+.reassess-note b{color:var(--ink-2)}
 .dim-chip{display:inline-block;margin-top:8px;font-size:.7rem;color:var(--ink-3);background:var(--ground-2);border:1px solid var(--line-soft);border-radius:20px;padding:3px 10px}
 
 /* ---------- Score and dimensions ---------- */
@@ -321,9 +330,36 @@ body.modal-open{overflow:hidden}
 .dim-track{height:8px;background:var(--ground-2);border-radius:5px;overflow:hidden}
 .dim-fill{height:100%;border-radius:5px;transition:width .6s ease}
 .dim-val{font-family:var(--mono);font-size:.9rem;font-weight:700;text-align:right}
-.dim-gain{font-size:.68rem;margin-left:3px;color:var(--sage)}
 .dim-why{grid-column:1/-1;font-size:.78rem;color:var(--ink-3);line-height:1.45;margin-top:-4px}
 .dims.compact .dim-why{display:none}
+
+/* ---------- Freshness, momentum, reassessment invite ---------- */
+/* A score with no date reads as current. These carry the date, the work done
+   since, and the invitation to re-score, which is what keeps an
+   assessment-only number from going quietly stale. */
+.freshness{font-size:.74rem;color:var(--ink-3);margin-top:5px;letter-spacing:.02em}
+.freshness .dot-sep{opacity:.5;margin:0 .45em}
+.freshness.stale{color:var(--amber)}
+.nudge{display:flex;align-items:center;gap:12px;flex-wrap:wrap;border:1px solid var(--line-soft);background:var(--panel-2);border-radius:var(--r-sm);padding:12px 14px;margin:14px 0}
+.nudge.strong{border-color:rgba(244,168,74,.42);background:rgba(244,168,74,.07)}
+.nudge-txt{flex:1 1 260px;font-size:.84rem;color:var(--ink-2);line-height:1.5}
+.nudge-txt b{color:var(--ink)}
+.nudge .mini-btn{flex:none}
+.nudge-dismiss{background:none;border:0;color:var(--ink-3);font-size:.76rem;cursor:pointer;padding:4px 6px;border-radius:6px}
+.nudge-dismiss:hover{color:var(--ink-2);background:var(--ground-2)}
+.since-line{font-size:.75rem;color:var(--sage);margin-top:6px;font-weight:600}
+.area-done{display:flex;align-items:center;gap:12px;flex-wrap:wrap;border:1px solid rgba(127,201,160,.4);background:rgba(127,201,160,.08);border-radius:var(--r-sm);padding:12px 14px;margin:8px 0 4px}
+.area-done-txt{flex:1 1 240px;font-size:.84rem;color:var(--ink-2);line-height:1.5}
+.area-done-txt b{color:var(--ink)}
+.delta-banner{border:1px solid rgba(127,201,160,.4);background:rgba(127,201,160,.08);border-radius:var(--r-sm);padding:14px 16px;margin-bottom:16px}
+.delta-banner.down{border-color:rgba(244,168,74,.42);background:rgba(244,168,74,.07)}
+.delta-head{font-family:var(--mono);font-size:1.35rem;font-weight:700;line-height:1.2}
+.delta-sub{font-size:.82rem;color:var(--ink-2);line-height:1.55;margin-top:5px}
+.delta-list{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px}
+.delta-chip{font-size:.73rem;border:1px solid var(--line-soft);background:var(--panel);border-radius:20px;padding:3px 10px;color:var(--ink-2)}
+.delta-chip b{font-family:var(--mono)}
+.delta-chip.up b{color:var(--sage)}
+.delta-chip.down b{color:var(--amber)}
 
 /* ---------- Timeline groups ---------- */
 .timeline{display:block}
@@ -354,6 +390,7 @@ body.modal-open{overflow:hidden}
 .res-tag{font-size:.65rem;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3);border:1px solid var(--line);border-radius:20px;padding:2px 8px;flex:none}
 .res-why{font-size:.79rem;color:var(--ink-3);line-height:1.5;margin-top:6px}
 .res-why b{color:var(--ink-2);font-weight:600}
+.res-personal{color:var(--amber-soft)}
 .res-note{font-size:.76rem;color:var(--ink-3);line-height:1.5;margin:10px 2px 0}
 
 /* ---------- Plan cards ---------- */
@@ -363,6 +400,15 @@ body.modal-open{overflow:hidden}
 .pc-next{background:var(--ground-2);border-radius:var(--r-sm);padding:9px 11px;margin-bottom:4px}
 .pc-next b{display:block;font-size:.66rem;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3);margin-bottom:3px}
 .pc-next span{font-size:.82rem;color:var(--ink-2);line-height:1.4}
+
+.emg-item{display:flex;align-items:center;justify-content:space-between;gap:12px;background:var(--panel);border:1px solid var(--line);border-radius:var(--r-md);padding:12px 14px;margin-bottom:8px}
+.emg-item.crit{border-color:rgba(232,112,95,.4)}
+.emg-item.abroad{border-color:rgba(244,168,74,.4)}
+.emg-body strong{display:block;font-size:.95rem;font-weight:600}
+.emg-body span{display:block;font-size:.8rem;color:var(--ink-3);margin-top:2px;line-height:1.45}
+.emg-call{font-family:var(--mono);font-weight:700;font-size:.9rem;color:var(--danger);white-space:nowrap;flex:none}
+.emg-link{font-size:.82rem;font-weight:600;color:var(--amber-soft);white-space:nowrap;flex:none}
+.emg-sep{font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3);font-weight:600;margin:16px 0 8px;padding-top:12px;border-top:1px solid var(--line-soft)}
 
 /* ---------- Demo picker ---------- */
 .demo-list{display:flex;flex-direction:column;gap:10px;margin:18px 0 4px}
@@ -702,7 +748,7 @@ body.gated{overflow:hidden}
   <!-- ================= ROADMAP ================= -->
   <section id="s-roadmap" class="screen">
     <a class="back" onclick="go('home')">← Home</a>
-    <div class="section-head"><div><h2>Recovery roadmap</h2><p>Check off steps as you go. Your score rises as you rebuild.</p></div></div>
+    <div class="section-head"><div><h2>Recovery roadmap</h2><p>Check off steps as you go. When something in your situation actually changes, tell LifeBridge and it will re-score.</p></div></div>
     <div id="roadmapOut"></div>
   </section>
 
@@ -754,7 +800,7 @@ body.gated{overflow:hidden}
   <div class="modal">
     <button class="close" onclick="closeModal('emergencyModal')" aria-label="Close">×</button>
     <h3 id="emgTitle">Get help now</h3>
-    <p>If you or someone else is in immediate danger, call your local emergency number first.</p>
+    <p id="emgLead">If you or someone else is in immediate danger, call your local emergency number first.</p>
     <div class="emg-list" id="emgList"></div>
   </div>
 </div>
@@ -785,6 +831,24 @@ body.gated{overflow:hidden}
     <button class="close" onclick="closeModal('aboutModal')" aria-label="Close">×</button>
     <h3 id="aboutTitle">About LifeBridge</h3>
     <div id="aboutBody"></div>
+  </div>
+</div>
+
+<!-- Update my situation -->
+<div class="modal-bg" id="reassessModal" role="dialog" aria-modal="true" aria-labelledby="reassessTitle">
+  <div class="modal">
+    <button class="close" onclick="closeModal('reassessModal')" aria-label="Close">×</button>
+    <h3 id="reassessTitle">Update my situation</h3>
+    <p>Tell LifeBridge what has actually changed since your last assessment, good or bad. It will reassess where you stand and adjust your priorities and roadmap.</p>
+    <label class="sr-only" for="reassessInput">What has changed</label>
+    <textarea class="navinput" id="reassessInput" rows="5"
+      placeholder="e.g. Survivor benefits came through, my landlord agreed a payment plan, and the school counselor is now working with both children."></textarea>
+    <div class="reassess-note" id="reassessNote"></div>
+    <div class="cta-row" style="margin-top:14px">
+      <button class="btn btn-amber cta-lg" id="reassessGo" onclick="runReassessment()">Reassess my situation</button>
+      <button class="btn btn-ghost cta-lg" onclick="closeModal('reassessModal')">Cancel</button>
+    </div>
+    <p class="auth-note">Your completed actions are kept. Only the assessment, priorities, risks and remaining steps are updated.</p>
   </div>
 </div>
 
@@ -824,11 +888,14 @@ const AI_ENDPOINT = "/.netlify/functions/ai-proxy";
 const HOTLINES = [
   {num:"911", label:"Emergency (US)", note:"Immediate danger, medical, fire, police", crit:true},
   {num:"988", label:"Suicide & Crisis Lifeline", note:"Call or text. 24/7, free, confidential", crit:true},
-  {num:"1-800-799-7233", label:"Domestic Violence Hotline", note:"24/7. Text START to 88788", crit:true},
-  {num:"1-800-273-8255", label:"Veterans Crisis Line", note:"Press 1 after calling 988", crit:false},
+  {num:"1-800-799-7233", label:"National Domestic Violence Hotline", note:"24/7. Text START to 88788", crit:true},
+  // Dial 988 then press 1. The old 1-800-273-8255 number was the pre-988
+  // Lifeline line and should not be presented as the primary contact.
+  {num:"988", label:"Veterans Crisis Line", note:"Dial 988 then press 1. Text 838255", crit:false},
   {num:"211", label:"211 Community Resources", note:"Food, housing, utilities, local aid", crit:false},
+  // The Disaster Distress Helpline is 1-800-985-5990, not the SAMHSA main line.
+  {num:"1-800-985-5990", label:"Disaster Distress Helpline", note:"Call or text. 24/7 crisis counseling for disaster-related distress", crit:false},
   {num:"1-800-843-5678", label:"NCMEC (missing children)", note:"National Center for Missing & Exploited Children", crit:false},
-  {num:"1-877-696-6775", label:"Disaster Distress Helpline", note:"SAMHSA. 24/7 disaster support", crit:false},
 ];
 
 /* ---------- Pillars + crisis modules (data-driven engine) ---------- */
@@ -965,12 +1032,18 @@ function renderHomeMeta(){
 
   if(head) head.textContent = "Your LifeBridge Score";
   const saved = !!STATE.cloudPlanId;
+  // The number on the home screen is the one most likely to be read out of
+  // context, weeks later, so it is the one that most needs its date attached.
+  const age = E.assessmentAge(p);
+  const nudge = E.reassessNudge(p, STATE.roadmap);
   el.innerHTML =
     `<span class="home-meta-txt"><b>${title}</b></span>
+     ${age ? `<span class="freshness${age.days>=E.NUDGE.staleDays?" stale":""}" style="margin:0">Assessed ${esc(age.label)}</span>` : ""}
      ${saved
        ? `<span class="status live"><span class="dot"></span>Saved to your account</span>`
        : `<span class="status offline"><span class="dot"></span>On this device only</span>`}
      ${saved ? "" : `<button class="mini-btn" onclick="go('roadmap')">Open plan</button>`}
+     ${nudge ? `<button class="mini-btn" onclick="openReassess()" aria-haspopup="dialog">Update my situation</button>` : ""}
      <button class="mini-btn" onclick="clearPlan(this)">Clear</button>`;
 }
 
@@ -1190,6 +1263,8 @@ async function runNavigator(opts){
 
   if(opts.sample) plan.isSample = true;
 
+  plan.originalSituation = text;   // preserved verbatim across every reassessment
+  plan.assessedAt = Date.now();
   STATE.lastPlan      = plan;
   STATE.situationText = text;
   STATE.source        = (source === "fallback") ? "fallback" : "ai";
@@ -1237,6 +1312,87 @@ function startFresh(){
   document.getElementById("navInput").focus();
 }
 
+/* Update my situation.
+   Completing a roadmap action means "I did this". A reassessment means "my
+   real-world situation has changed". Only the second one can move the score,
+   which is why this exists as its own deliberate step. */
+function openReassess(){
+  if(!STATE.lastPlan){ toast("Build a plan first."); return; }
+  if(STATE.isSample){ toast("This is a demo. Start your own assessment to use reassessment."); return; }
+  const prog = E.recoveryProgress(STATE.roadmap);
+  const n = E.assessmentCount(STATE.lastPlan);
+  document.getElementById("reassessNote").innerHTML =
+    `<b>Where you are now:</b> LifeBridge Score ${STATE.score} of 100, ${prog.done} of ${prog.total} actions complete` +
+    (n>1 ? `, ${n} assessments so far.` : `.`);
+  document.getElementById("reassessInput").value = "";
+  openModal("reassessModal");
+  setTimeout(()=>document.getElementById("reassessInput").focus(), 60);
+}
+
+async function runReassessment(){
+  const input = document.getElementById("reassessInput");
+  const text = input.value.trim();
+  if(text.length < 8){ toast("Tell LifeBridge a little more about what has changed."); input.focus(); return; }
+
+  const oldPlan = STATE.lastPlan;
+  if(!oldPlan) return;
+  const btn = document.getElementById("reassessGo");
+  btn.disabled = true; btn.setAttribute("aria-busy","true");
+  btn.innerHTML = `<span class="spin"></span> Reassessing…`;
+
+  const crisis = STATE.activeCrisis ? flatCrises[STATE.activeCrisis] : null;
+  try{
+    const raw = await callAI(E.buildReassessPrompt(oldPlan, text, crisis), E.ACRE_SYSTEM, true, 4096);
+    const fresh = E.normalizePlan(parseLenient(raw));
+    if(!fresh.actions.length || !fresh.priorities.length) throw new Error("incomplete reassessment");
+
+    const before = E.lifeBridgeScore(oldPlan);
+    // Completed work survives; only the assessment and what remains change.
+    STATE.roadmap  = E.mergeRoadmap(STATE.roadmap, fresh);
+    STATE.lastPlan = E.recordReassessment(oldPlan, fresh, text);
+    refreshScore();
+    saveState();
+
+    closeModal("reassessModal");
+    // A dismissed reminder is answered by an actual reassessment, so the next
+    // one is allowed to appear when it is earned again.
+    UI.nudgeDismissed = false;
+    renderPlan(STATE.lastPlan, "ai");
+    // The roadmap was merged, so its screen is now out of date. Redraw it here
+    // rather than leaving a stale one behind the assessment for the reader to
+    // navigate back into.
+    renderRoadmap();
+    renderChatContext();
+    renderHomeMeta();
+    // Land on the assessment, not the roadmap. They have just said their
+    // situation changed, so the first thing to show them is what changed in
+    // the reading. The roadmap is one button away on that screen. The plan
+    // renders inside the assessment screen, which is why this is "navigator".
+    go("navigator");
+    document.getElementById("planOut").focus();
+
+    const after = STATE.score;
+    const moved = after === before ? "Your score is unchanged."
+                : after > before   ? `Your score moved from ${before} to ${after}.`
+                                   : `Your score moved from ${before} to ${after}. That is worth knowing early.`;
+    toast(`Reassessed. ${moved}`);
+    announce(`Situation reassessed. ${moved} Completed actions kept.`);
+
+    // If this plan is saved, push the reassessment straight away rather than
+    // waiting for the next checkbox to trigger a sync.
+    if(STATE.cloudPlanId) syncRoadmap(true);
+  }catch(e){
+    console.warn("[LifeBridge] reassessment failed:", e.message);
+    // The existing plan is deliberately left untouched. Losing a working plan
+    // because the planner was briefly unavailable would be the worse failure.
+    document.getElementById("reassessNote").innerHTML =
+      `<span style="color:var(--danger)">Could not reassess right now. Your existing plan and completed actions are unchanged. Try again in a moment.</span>`;
+  }finally{
+    btn.disabled = false; btn.removeAttribute("aria-busy");
+    btn.textContent = "Reassess my situation";
+  }
+}
+
 function openDemoPicker(){
   document.getElementById("demoList").innerHTML = E.DEMO_SCENARIOS.map(d=>`
     <button class="demo-opt${d.recommended?" rec":""}" onclick="runDemo('${esc(d.id)}')">
@@ -1269,13 +1425,113 @@ function runDemo(id){
 /* ---------- scoring ---------- */
 function refreshScore(){
   const p = STATE.lastPlan;
-  STATE.score = p ? E.lifeBridgeScore(p, STATE.roadmap) : null;
+  // The score is the assessment result. Ticking roadmap boxes must not move it.
+  STATE.score = p ? E.lifeBridgeScore(p) : null;
   saveState();
   updateScoreUI();
 }
 
 function dimColor(v){ return v>=66 ? "var(--sage)" : v>=40 ? "var(--amber)" : "var(--danger)"; }
 function urgencyClass(u){ return u==="High" ? "u-high" : u==="Low" ? "u-low" : "u-med"; }
+
+/* ---------- freshness, momentum and the invitation to re-score ---------- */
+/* The score deliberately does not move when a box is ticked. That is the
+   honest choice and it leaves two gaps, which is what everything below fills.
+
+   First, a number with no date on it reads as current. So the date travels
+   with the score everywhere the score appears.
+
+   Second, someone who does the work gets no acknowledgement of having done it.
+   The previous build acknowledged it by raising the score, which quietly
+   claimed the actions had worked. These acknowledge the effort as effort, and
+   at the point where someone finishes everything an area needed, they ask the
+   one question only that person can answer: did it change anything? */
+
+/* Session-scoped on purpose, and never written to storage. A dismissed
+   reminder should come back on the next visit if the situation still warrants
+   it. A permanently silenced prompt is how a score gets to be three months old
+   without anyone noticing. */
+const UI = { nudgeDismissed:false };
+
+/* dateOnly is for screens that already state the work done since somewhere
+   else, so the same fact is not printed twice in one glance. */
+function freshnessHTML(p, dateOnly){
+  if(!p || p.isSample) return "";
+  const age = E.assessmentAge(p);
+  if(!age) return "";
+  const since = dateOnly ? 0 : E.actionsSinceAssessment(p, STATE.roadmap);
+  return `<div class="freshness${age.days>=E.NUDGE.staleDays?" stale":""}">Assessed ${esc(age.label)}${
+    since ? `<span class="dot-sep">·</span>${since} action${since===1?"":"s"} completed since` : ""}</div>`;
+}
+
+function nudgeHTML(){
+  if(UI.nudgeDismissed) return "";
+  const n = E.reassessNudge(STATE.lastPlan, STATE.roadmap);
+  if(!n) return "";
+  return `<div class="nudge${n.level==="strong"?" strong":""}" role="status">
+    <span class="nudge-txt"><b>${esc(n.reason)}</b> Your score still reflects the last assessment. Tell LifeBridge what has actually changed and it will re-score your situation.</span>
+    <button class="mini-btn" onclick="openReassess()" aria-haspopup="dialog">Update my situation</button>
+    <button class="nudge-dismiss" onclick="dismissNudge()">Not now</button>
+  </div>`;
+}
+
+/* Removes the element rather than re-rendering, so dismissing does not throw
+   the reader back to the top of a long screen. */
+function dismissNudge(){
+  UI.nudgeDismissed = true;
+  document.querySelectorAll(".nudge").forEach(el=>el.remove());
+  announce("Reminder hidden. Update my situation is still available on this screen.");
+}
+
+/* The moment an area's actions are all done. This is where the previous
+   build's score bump used to happen, and it is the right moment for
+   encouragement; it is only the claim attached to it that was wrong. */
+function areaDoneHTML(){
+  const p = STATE.lastPlan;
+  if(!p || p.isSample) return "";
+  const mom = E.dimensionMomentum(p, STATE.roadmap);
+  const at  = E.assessedAt(p);
+  const finished = E.DIM_IDS.filter(id =>
+    mom[id].complete &&
+    // only areas finished since the current assessment, so this does not
+    // reappear for work that has already been re-scored
+    (STATE.roadmap||[]).some(s => s.dimension===id && s.done && (at==null || Number(s.doneAt)>at))
+  );
+  if(!finished.length) return "";
+  const names = finished.map(id => E.DIM_BY_ID[id].label);
+  const list = names.length===1 ? names[0]
+             : names.slice(0,-1).join(", ") + " and " + names[names.length-1];
+  const many = names.length>1;
+  return `<div class="area-done" role="status">
+    <span class="area-done-txt">You have completed every action for <b>${esc(list)}</b>. Did any of it change things on the ground? Tell LifeBridge and it will re-score ${many?"those areas":"that area"}.</span>
+    <button class="mini-btn" onclick="openReassess()" aria-haspopup="dialog">Update my situation</button>
+  </div>`;
+}
+
+/* What the last reassessment actually did, shown while it is still news.
+   Derived entirely from stored history, so it survives a reload and appears
+   on another device too, and ages out on its own after a day, by which point
+   the pairing on the score itself carries the same information. */
+function deltaBannerHTML(p){
+  if(!p || p.isSample || !E.isReassessed(p)) return "";
+  const age = E.assessmentAge(p);
+  if(!age || age.days > 0) return "";
+  const before = E.previousScore(p), after = E.lifeBridgeScore(p);
+  if(before==null || after==null) return "";
+  const dims = E.dimensionDeltas(E.lastAssessmentDims(p), p).slice(0,4);
+  const dir = after > before ? "up" : after < before ? "down" : "flat";
+  return `<div class="delta-banner${dir==="down"?" down":""}" role="status">
+    <div class="delta-head" style="color:${dimColor(after)}">
+      <span class="score-prev">${before}</span><span class="score-arrow" aria-hidden="true">→</span>${after}<span style="font-size:.6em;color:var(--ink-3)">/100</span>
+    </div>
+    <p class="delta-sub">${
+      dir==="up"   ? "Reassessed just now, and your situation has improved. This came from what you told LifeBridge had changed, not from ticking actions off."
+    : dir==="down" ? "Reassessed just now. Some areas have become harder. Seeing that early is what makes it possible to act on."
+    :                "Reassessed just now. The overall number has not moved, though individual areas may have."}</p>
+    ${dims.length ? `<div class="delta-list">${dims.map(d=>
+      `<span class="delta-chip ${d.delta>0?"up":"down"}">${esc(d.label)} <b>${d.delta>0?"+":""}${d.delta}</b></span>`).join("")}</div>` : ""}
+  </div>`;
+}
 
 /* ---------- the plan screen ---------- */
 function renderPlan(p, source){
@@ -1284,6 +1540,7 @@ function renderPlan(p, source){
   const score = E.lifeBridgeScore(p, STATE.roadmap);
   const band  = E.scoreBand(score);
   const prog  = E.recoveryProgress(STATE.roadmap);
+  const prev  = E.previousScore(p);
 
   const status = p.isSample
     ? `<div class="status sample"><span class="dot"></span>Demo scenario, sample data</div>`
@@ -1308,10 +1565,10 @@ function renderPlan(p, source){
   const dimRows = dims.map(d=>`
     <div class="dim-row">
       <div class="dim-label">${esc(d.label)}</div>
-      <div class="dim-track"><div class="dim-fill" style="width:${d.current}%;background:${dimColor(d.current)}"></div></div>
-      <div class="dim-val" style="color:${dimColor(d.current)}">${d.current}${
-        d.current>d.base ? `<span class="dim-gain" title="improved by completed actions">+${d.current-d.base}</span>` : ""}</div>
-      ${d.why ? `<p class="dim-why">${esc(d.why)}</p>` : `<p class="dim-why">Not enough detail to assess this area.</p>`}
+      <div class="dim-track"><div class="dim-fill" style="width:${d.score}%;background:${dimColor(d.score)}"></div></div>
+      <div class="dim-val" style="color:${dimColor(d.score)}">${d.score}</div>
+      <p class="dim-why">${d.why ? esc(d.why) : "Not enough detail to assess this area."}${
+        d.actionsTotal ? ` <span class="dim-actions">${d.actionsDone} of ${d.actionsTotal} linked actions done</span>` : ""}</p>
     </div>`).join("");
 
   const actionsByBucket = E.WHEN_BUCKETS.map(b=>{
@@ -1343,6 +1600,7 @@ function renderPlan(p, source){
       </div></div>`).join("");
 
   out.innerHTML = `
+    ${deltaBannerHTML(p)}
     <div class="plan-status-row">${status}
       <span class="engine-tag">Powered by the LifeBridge Recovery Engine</span>
     </div>
@@ -1363,12 +1621,17 @@ function renderPlan(p, source){
       <p class="block-sub">The assessment those priorities came from. An AI-estimated stability indicator, not a clinical, legal or financial assessment.</p>
       <div class="score-head">
         <div>
-          <div class="score-big" style="color:${dimColor(score)}">${score}<span>/100</span></div>
-          <div class="score-band">${esc(band.label)}</div>
+          <div class="score-big" style="color:${dimColor(score)}">${
+            prev!=null && prev!==score ? `<span class="score-prev">${prev}</span><span class="score-arrow" aria-hidden="true">→</span>` : ""
+          }${score}<span>/100</span></div>
+          <div class="score-band">${esc(band.label)}${
+            prev!=null && prev!==score ? ` · Updated after reassessment` : ""}</div>
+          ${freshnessHTML(p)}
         </div>
         <button class="linkish" onclick="openScoreInfo()" aria-haspopup="dialog">How is this calculated?</button>
       </div>
       <div class="dims">${dimRows}</div>
+      ${nudgeHTML()}
     </div>
 
     <div class="plan-block">
@@ -1390,6 +1653,7 @@ function renderPlan(p, source){
 
     <div class="cta-row">
       <button class="btn btn-amber cta-lg" onclick="go('roadmap')">Recover · track my progress →</button>
+      ${p.isSample ? "" : `<button class="btn btn-ghost cta-lg" onclick="openReassess()" aria-haspopup="dialog">Update my situation</button>`}
       <span id="savePlanSlot"></span>
       <button class="btn btn-ghost cta-lg" onclick="openEmergency()">Need help right now?</button>
     </div>
@@ -1402,23 +1666,38 @@ function renderPlan(p, source){
 function openScoreInfo(){
   const p = STATE.lastPlan;
   const dims = p ? E.currentDimensions(p, STATE.roadmap) : [];
+  const prog = E.recoveryProgress(STATE.roadmap);
+  const prev = E.previousScore(p);
+  const age  = p && !p.isSample ? E.assessmentAge(p) : null;
   document.getElementById("scoreInfoBody").innerHTML = `
     <p>The LifeBridge Score is an <strong>AI-estimated stability indicator</strong>. It is decision support, meant to help you see which areas may need attention first.</p>
     <p><strong>It is not</strong> a clinical, legal, financial or government assessment, and it does not determine whether you qualify for any programme.</p>
-    <h4 class="about-h">How it is worked out</h4>
+
+    <h4 class="about-h">Two different numbers</h4>
+    <p>LifeBridge tracks these separately on purpose, because they answer different questions.</p>
+    <ol class="about-ol">
+      <li><strong>LifeBridge Score</strong> reflects your <em>situation</em>, estimated across six areas from what you told LifeBridge. It changes when you tell LifeBridge your circumstances have changed, using <strong>Update my situation</strong>.</li>
+      <li><strong>Recovery Progress</strong> reflects your <em>actions</em>, the share of your roadmap you have completed.${
+        prog.total ? ` Right now that is ${prog.done} of ${prog.total}, or ${prog.pct}%.` : ""}</li>
+    </ol>
+    <p>Ticking an action off does not raise your score by itself. Calling your landlord is progress; whether your housing is actually more secure depends on what the landlord said, and only you know that. When something real changes, tell LifeBridge and it will reassess.</p>
+    <p>Because of that, your score is a reading from a particular moment, and LifeBridge shows you when that moment was. ${
+      age ? `Yours was taken <strong>${esc(age.label)}</strong>.` : ""} If it is getting old, or you have worked through a run of actions, LifeBridge will suggest updating it. Nothing happens to your score until you do, and your completed actions are kept either way.</p>
+
+    <h4 class="about-h">How the score is worked out</h4>
     <ol class="about-ol">
       <li>The Recovery Engine reads your situation and estimates stability in six areas, from 0 (in crisis) to 100 (stable).</li>
       <li>Your score is the average of those six areas.</li>
-      <li>Each roadmap action is linked to one area. Completing it raises that area only, not all of them.</li>
-      <li>Completing every action linked to an area closes at most <strong>half</strong> the remaining gap to 100. Checking a box is evidence of progress, not proof of stability.</li>
-      <li>Some steps, such as gathering documents, help with everything at once. Those count toward your recovery progress but are not credited to any single area, because crediting one would overstate it.</li>
+      <li>Each roadmap action is labelled with the area it is <em>intended</em> to support, which is how you can see where your effort is going.</li>
+      <li>Some steps, such as gathering documents, help with everything at once and are not tied to a single area.</li>
     </ol>
+    ${prev!=null ? `<p><strong>Your score has been reassessed.</strong> It was ${prev} at the previous assessment and is ${E.lifeBridgeScore(p)} now.</p>` : ""}
     ${dims.length ? `<h4 class="about-h">Where yours comes from</h4>
       <div class="dims compact">${dims.map(d=>`
         <div class="dim-row">
           <div class="dim-label">${esc(d.label)}</div>
-          <div class="dim-track"><div class="dim-fill" style="width:${d.current}%;background:${dimColor(d.current)}"></div></div>
-          <div class="dim-val" style="color:${dimColor(d.current)}">${d.current}</div>
+          <div class="dim-track"><div class="dim-fill" style="width:${d.score}%;background:${dimColor(d.score)}"></div></div>
+          <div class="dim-val" style="color:${dimColor(d.score)}">${d.score}</div>
         </div>`).join("")}</div>` : ""}
     <p style="color:var(--ink-3);font-size:.85rem">Estimates come from the details you provide. The more you share, the more specific they can be.</p>`;
   openModal("scoreInfoModal");
@@ -1439,7 +1718,12 @@ function renderRoadmap(){
   }
   const prog  = E.recoveryProgress(STATE.roadmap);
   const score = STATE.score;
+  const prev  = E.previousScore(STATE.lastPlan);
   const band  = score==null ? null : E.scoreBand(score);
+  const since = E.actionsSinceAssessment(STATE.lastPlan, STATE.roadmap);
+  // Both ask for the same thing. When an area is finished, that is the more
+  // specific and better-earned version, so it wins and the general one is held.
+  const areaDone = areaDoneHTML();
 
   const groups = E.WHEN_BUCKETS.map(b=>{
     const idx = STATE.roadmap.map((s,i)=>[s,i]).filter(([s])=> (s.when||"week")===b.id);
@@ -1458,9 +1742,10 @@ function renderRoadmap(){
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12l5 5 9-11" stroke="#0f2419" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
           </button>
           <div class="step-body">
-            <strong>${esc(s.label)}</strong>
+            <strong>${esc(s.label)}${s.isNew?` <span class="step-tag new">New</span>`:""}${
+              s.retired?` <span class="step-tag old">No longer recommended</span>`:""}</strong>
             ${s.detail?`<p>${esc(s.detail)}</p>`:""}
-            ${dim ? `<span class="dim-chip">This action supports ${esc(dim.label)}</span>`
+            ${dim ? `<span class="dim-chip">Intended to support ${esc(dim.label)}</span>`
                   : `<span class="dim-chip muted">Counts toward your progress</span>`}
           </div>
         </div>`;
@@ -1475,40 +1760,67 @@ function renderRoadmap(){
         <p>${prog.done} of ${prog.total} actions complete</p>
       </div>
       <div class="rm-stats">
-        <div><span class="rm-progress">${prog.pct}%</span><small>Recovery progress</small></div>
-        ${score!=null?`<div><span class="rm-progress" style="color:${dimColor(score)}">${score}</span><small>${esc(band.label)}</small></div>`:""}
+        <div><span class="rm-progress">${prog.pct}%</span><small>Recovery progress · ${prog.done} of ${prog.total} actions</small></div>
+        ${score!=null?`<div><span class="rm-progress" style="color:${dimColor(score)}">${
+          prev!=null && prev!==score ? `<span class="score-prev">${prev}</span><span class="score-arrow" aria-hidden="true">→</span>` : ""}${score}</span>
+          <small>LifeBridge Score${band?` · ${esc(band.label)}`:""}</small>
+          ${freshnessHTML(STATE.lastPlan, true)}</div>`:""}
       </div>
     </div>
     <div class="rm-track"><div class="rm-fill" style="width:${prog.pct}%"></div></div>
+    ${since ? `<p class="since-line">${since} action${since===1?"":"s"} completed since your last assessment</p>` : ""}
+    ${areaDone || nudgeHTML()}
     ${STATE.isSample?`<div class="status sample" style="margin-bottom:14px"><span class="dot"></span>Demo scenario, sample data</div>`:""}
     ${groups}
-    <p class="rm-foot">Completing an action raises the area it supports. It closes at most half the remaining gap, because real recovery is more than a checklist.</p>
+    <div class="rm-actions">
+      ${STATE.isSample ? "" : `<button class="btn btn-amber" onclick="openReassess()" aria-haspopup="dialog">Update my situation</button>`}
+      <button class="btn btn-ghost" onclick="openScoreInfo()">How the score works</button>
+    </div>
+    <p class="rm-foot">Ticking an action off updates your <strong>Recovery Progress</strong>, which is a record of what you have done. Your <strong>LifeBridge Score</strong> is a reading of where you stand, taken at the last assessment, which is why it carries a date. It changes when you tell LifeBridge what has actually changed.</p>
   </div>`;
 }
 
 function toggleStep(i){
   const step = STATE.roadmap[i];
   if(!step) return;
+
+  // Captured before the change so the acknowledgement can tell "this tick
+  // finished the area" apart from "the area was already finished".
+  // A roadmap restored from an older device could carry a dimension string
+  // that is no longer one of the six, so this never trusts it blindly.
+  const dimId   = E.DIM_IDS.includes(step.dimension) ? step.dimension : null;
+  const wasDone = dimId ? E.dimensionMomentum(STATE.lastPlan, STATE.roadmap)[dimId].complete : false;
+
   step.done = !step.done;
   step.doneAt = step.done ? Date.now() : null;
-  refreshScore();
+  // Progress only. The assessment score is not touched by ticking a box.
+  saveState();
   renderRoadmap();
-  // renderRoadmap replaces the list, which throws away the element that was
-  // just clicked. Put focus back where the user left it.
+  renderHomeMeta();   // the "completed since" count on the home screen moves too
   const back = document.querySelectorAll(".step-check")[i];
   if(back) back.focus();
   syncRoadmap();
 
-  const dim = E.DIM_BY_ID[step.dimension];
-  if(step.done){
-    announce(`${step.label} marked complete.` + (dim?` This supports ${dim.label}.`:""));
-    const prog = E.recoveryProgress(STATE.roadmap);
-    if(prog.pct===100) toast("Every action complete. That is real ground regained.");
-    else if(dim)       toast(`Marked complete. This supports ${dim.label}.`);
-    else               toast("Marked complete.");
-  }else{
-    announce(`${step.label} marked not complete.`);
+  const prog = E.recoveryProgress(STATE.roadmap);
+  if(!step.done){
+    announce(`${step.label} marked not complete. Recovery progress ${prog.pct} percent.`);
+    return;
   }
+
+  announce(`${step.label} marked complete. Recovery progress ${prog.pct} percent.`);
+
+  // Finishing an area is the moment the previous build used to move the score
+  // at. Same moment, and the encouragement belongs here, but the question of
+  // whether it worked is the person's to answer, not the app's to assume.
+  const nowDone = dimId && !wasDone && E.dimensionMomentum(STATE.lastPlan, STATE.roadmap)[dimId].complete;
+  const dimLabel = dimId && E.DIM_BY_ID[dimId] ? E.DIM_BY_ID[dimId].label : null;
+
+  if(prog.pct===100)      toast("Every action complete. If your situation has actually changed, Update my situation will re-score it.");
+  else if(nowDone && dimLabel){
+    toast(`That was the last action for ${dimLabel}. If it changed anything, tell LifeBridge and it will re-score.`);
+    announce(`All actions for ${dimLabel} are complete.`);
+  }
+  else                    toast(`Marked complete. Recovery progress ${prog.pct}%.`);
 }
 
 /* ---------- Resources map ---------- */
@@ -1604,15 +1916,21 @@ function renderResList(places, withHotlines){
   // near me"; this answers "what should I be looking for at all", which is the
   // part someone in crisis usually cannot know to ask.
   const cid = STATE.activeCrisis;
-  const curated = cid ? E.resourcesForCrisis(cid) : (E.RESOURCE_CATALOG._always || []);
+  const base = cid ? E.resourcesForCrisis(cid) : (E.RESOURCE_CATALOG._always || []);
+  // Ordered by this person's assessment, not by category alone. Two people in
+  // the same category with different circumstances should not see the same
+  // list in the same order. Nothing is removed, only reordered.
+  const curated = E.rankResources(base, STATE.lastPlan, STATE.roadmap);
   if(curated.length){
     const label = cid && flatCrises[cid] ? flatCrises[cid].name : "your situation";
-    html += `<div class="res-head sage">Matched to ${esc(label)}</div>`;
+    const ranked = STATE.lastPlan && !STATE.isSample;
+    html += `<div class="res-head sage">Matched to ${esc(label)}${ranked ? ", ordered by your assessment" : ""}</div>`;
     html += curated.map(r=>`
       <div class="res-item">
         <div class="res-top"><h5>${esc(r.name)}</h5>${r.tag?`<span class="res-tag">${esc(r.tag)}</span>`:""}</div>
         <div class="meta">${esc(r.what)}</div>
-        <div class="res-why"><b>Why this is suggested:</b> ${esc(r.why)}</div>
+        <div class="res-why"><b>Why this is suggested:</b> ${esc(r.why)}${
+          r.personalWhy ? ` <span class="res-personal">${esc(r.personalWhy)}</span>` : ""}</div>
         <a class="call" href="${esc(r.url)}" target="_blank" rel="noopener noreferrer">Official site <span aria-hidden="true">↗</span></a>
       </div>`).join("");
     html += `<p class="res-note">These may be able to help. LifeBridge cannot confirm whether you qualify, so check eligibility with each programme directly.</p>`;
@@ -1704,7 +2022,9 @@ function renderChatSuggestions(){
     qs.push("What documents might I need?");
     if(next) qs.push("What if I cannot complete a step?");
     qs.push("Who can help me nearby?");
-    if(STATE.roadmap.some(s=>s.done)) qs.push("Why did my LifeBridge Score change?");
+    if(E.isReassessed(p)) qs.push("What has changed since my first assessment?");
+    if(STATE.roadmap.some(s=>s.done)) qs.push("Has my situation improved?");
+    if(STATE.roadmap.filter(s=>s.done).length>=2 && !E.isReassessed(p)) qs.unshift("Should I update my situation?");
   }
   el.innerHTML = qs.slice(0,4).map(q=>
     `<button class="chip" onclick="askChat(this.textContent)">${esc(q)}</button>`).join("");
@@ -1736,15 +2056,25 @@ async function sendChat(){
     const dims = E.currentDimensions(plan, STATE.roadmap);
     const next = E.nextAction(STATE.roadmap);
     const prog = E.recoveryProgress(STATE.roadmap);
+    const age   = ctx.mode === "sample" ? null : E.assessmentAge(plan);
+    const since = ctx.mode === "sample" ? 0    : E.actionsSinceAssessment(plan, STATE.roadmap);
     planCtx =
       (ctx.mode === "sample"
         ? `\n\nA DEMONSTRATION PLAN IS LOADED. It is a fictional scenario with sample data, NOT this person's own situation. Never describe it as "your plan" or assume any of it applies to them. You may explain how it was built and offer to work from their own assessment instead.`
         : `\n\nTHIS PERSON'S ACTIVE RECOVERY PLAN (use it, refer to it specifically):`) +
       `\nSituation: ${plan.crisisType}` +
       `\nLifeBridge Score: ${STATE.score} of 100 (${E.scoreBand(STATE.score||0).label}).` +
-      `\nStability by area: ${dims.map(d=>`${d.label} ${d.current}`).join(", ")}.` +
+      `\nStability by area: ${dims.map(d=>`${d.label} ${d.score}`).join(", ")}.` +
       `\nTop priorities: ${(plan.priorities||[]).map((x,i)=>`${i+1}. ${x.title} (${x.urgency}) because ${x.why}`).join(" ")}` +
-      `\nProgress: ${prog.done} of ${prog.total} actions complete.` +
+      `\nRecovery Progress: ${prog.done} of ${prog.total} actions complete (${prog.pct}%).` +
+      // How old the reading is, so the assistant never discusses a month-old
+      // score as though it described this morning.
+      (age ? `\nThat score was assessed ${age.label}${since?`, and they have completed ${since} action${since===1?"":"s"} since`:""}.` : "") +
+      (E.previousScore(plan)!=null ? `\nPrevious LifeBridge Score before the last reassessment: ${E.previousScore(plan)}.` : "") +
+      (plan.originalSituation ? `\nOriginal situation as first described: "${plan.originalSituation}"` : "") +
+      ((plan.updates||[]).length ? `\nUpdates they have given since: ${(plan.updates||[]).map(u=>u.text).join(" | ")}` : "") +
+      `\nCompleted actions: ${(STATE.roadmap||[]).filter(s=>s.done).map(s=>s.label).join("; ") || "none yet"}.` +
+      `\nStill outstanding: ${(STATE.roadmap||[]).filter(s=>!s.done).map(s=>s.label).join("; ") || "none"}.` +
       (next ? `\nNext suggested action: ${next.label}.` : "") +
       "";
   }
@@ -1754,7 +2084,14 @@ You are NOT a lawyer, doctor, therapist, emergency service or government agency,
 
 If anyone mentions immediate danger, abuse or self-harm, gently urge them to call 911 or 988 now, before anything else.
 
-When the person has an active plan, answer using it: name the specific priority, action or area rather than speaking generally. If they ask why their score changed, explain that completing an action raises the area it supports, and that it closes at most half the remaining gap.${planCtx}`;
+When the person has an active plan, answer using it: name the specific priority, action or area rather than speaking generally.
+
+Two numbers exist and they mean different things. Never confuse them:
+- Recovery Progress is how much of their roadmap they have completed. Ticking an action off updates this.
+- The LifeBridge Score reflects the most recent assessment of their situation. Completing an action does NOT change it. It changes when they tell LifeBridge what has actually changed, using "Update my situation", and LifeBridge reassesses.
+If they ask why their score changed, or has not changed, explain exactly that. If they have done real-world things that have changed their circumstances, suggest they use Update my situation so the assessment can catch up.
+
+The score is a reading from a particular moment, and you are told when that moment was. If it is more than a week old, treat it as possibly out of date and say so rather than describing it as where they stand today.${planCtx}`;
   const convo = chatHistory.slice(-6).map(m=>(m.role==="me"?"Person: ":"You: ")+m.t).join("\n");
   try{
     const reply = await callAI(convo+"\nYou:", sys, false);
@@ -1768,10 +2105,35 @@ When the person has an active plan, answer using it: name the specific priority,
 
 /* ---------- Modals ---------- */
 function openEmergency(){
-  document.getElementById("emgList").innerHTML = HOTLINES.map(h=>`
-    <div class="emg ${h.crit?'crit':''}">
-      <div class="emg-num">${h.num}</div>
-      <div class="emg-txt"><strong>${h.label}</strong><span>${h.note}</span></div>
+  const abroad = E.looksAbroad(STATE.situationText, STATE.activeCrisis);
+  const lead = document.getElementById("emgLead");
+  const list = document.getElementById("emgList");
+
+  if(abroad){
+    // Telling someone standing in another country to "call 911" is useless at
+    // best. Local emergency services first, then the embassy, and the US
+    // numbers kept below clearly marked as US-only.
+    lead.textContent = E.ABROAD_EMERGENCY.lead;
+    list.innerHTML =
+      E.ABROAD_EMERGENCY.steps.map(s=>`
+        <div class="emg-item abroad">
+          <div class="emg-body"><strong>${esc(s.label)}</strong><span>${esc(s.note)}</span></div>
+          ${s.url?`<a class="emg-link" href="${esc(s.url)}" target="_blank" rel="noopener noreferrer">Open <span aria-hidden="true">↗</span></a>`:""}
+        </div>`).join("") +
+      `<div class="emg-sep">US numbers, which work only inside the United States</div>` +
+      HOTLINES.map(h=>`
+        <div class="emg-item ${h.crit?"crit":""}">
+          <div class="emg-body"><strong>${esc(h.label)}</strong><span>${esc(h.note)}</span></div>
+          <a class="emg-call" href="tel:${h.num.replace(/[^0-9]/g,'')}">${esc(h.num)}</a>
+        </div>`).join("");
+    return openModal("emergencyModal");
+  }
+
+  lead.textContent = "If you or someone else is in immediate danger, call your local emergency number first.";
+  list.innerHTML = HOTLINES.map(h=>`
+    <div class="emg-item ${h.crit?"crit":""}">
+      <div class="emg-body"><strong>${esc(h.label)}</strong><span>${esc(h.note)}</span></div>
+      <a class="emg-call" href="tel:${h.num.replace(/[^0-9]/g,'')}">${esc(h.num)}</a>
     </div>`).join("");
   openModal("emergencyModal");
 }
@@ -2174,15 +2536,20 @@ async function savePlanToAccount(){
 // Checking off a step is the most frequent write in the app, so it is
 // debounced rather than fired per click.
 let syncT;
-function syncRoadmap(){
+function syncRoadmap(immediate){
   if(!cloudOn() || !CLOUD_USER || !STATE.cloudPlanId) return;
   clearTimeout(syncT);
-  syncT = setTimeout(async ()=>{
+  const push = async ()=>{
     try{
-      await window.LBCloud.updatePlan(STATE.cloudPlanId, { roadmap: STATE.roadmap, score: STATE.score });
+      const patch = { roadmap: STATE.roadmap, score: STATE.score };
+      // A reassessment rewrites the assessment itself, so the plan body has to
+      // go with it. A checkbox does not, so it stays a cheap roadmap-only write.
+      if(immediate) patch.plan = STATE.lastPlan;
+      await window.LBCloud.updatePlan(STATE.cloudPlanId, patch);
       await window.LBCloud.saveProfile({ currentPlanId: STATE.cloudPlanId, score: STATE.score });
-    }catch(e){ console.warn("[LifeBridge] roadmap sync deferred:", e); }
-  }, 700);
+    }catch(e){ console.warn("[LifeBridge] sync deferred:", e); }
+  };
+  if(immediate) push(); else syncT = setTimeout(push, 700);
 }
 
 /* ---------- My plans ---------- */
@@ -2232,8 +2599,10 @@ async function renderPlans(){
     const pr   = p.progress || {done:0,total:(p.roadmap||[]).length,pct:0};
     const cur  = p.id === STATE.cloudPlanId;
     const norm = E.normalizePlan(p.plan || {});
-    const base = E.baselineScore(norm);
-    const now  = p.score == null ? base : clamp(p.score);
+    // The pairing shown is previous assessment -> current assessment. It is a
+    // reassessment history, never a side effect of ticking boxes.
+    const now  = E.lifeBridgeScore(norm) ?? (p.score == null ? null : clamp(p.score));
+    const base = E.previousScore(norm);
     const next = E.nextAction(p.roadmap || []);
     const band = now == null ? null : E.scoreBand(now);
     return `<div class="plan-card">
@@ -2243,7 +2612,8 @@ async function renderPlans(){
         <div class="pc-stat">
           <span class="pc-num" style="color:${dimColor(now==null?60:now)}">${
             base!=null && now!=null && now!==base ? `${base} \u2192 ${now}` : (now==null?"\u00b7":now)}</span>
-          <small>LifeBridge Score${band?` \u00b7 ${esc(band.label)}`:""}</small>
+          <small>LifeBridge Score${band?` \u00b7 ${esc(band.label)}`:""}${
+            base!=null && now!=null && now!==base ? " \u00b7 reassessed" : ""}</small>
         </div>
         <div class="pc-stat">
           <span class="pc-num">${clamp(pr.pct)}%</span>

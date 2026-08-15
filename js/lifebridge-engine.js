@@ -169,6 +169,41 @@ Rules:
 - 3 to 5 items for documents, helpers and risksToWatch.
 - If there is any sign of immediate physical danger, abuse, or self-harm: make the first priority contacting emergency services or the 988 Suicide and Crisis Lifeline, set safety stability low, and put a "Do now" action first.`;
 
+/* Reassessment. The engine is given the original description, what the previous
+   assessment concluded, what the person has actually completed, and what they
+   say has changed. Everything is passed rather than summarized, because the
+   point of a reassessment is that the model can weigh old against new. */
+function buildReassessPrompt(oldPlan, updateText, crisis) {
+  const dims = (oldPlan.dimensions || []).map(d => `${d.label} ${clampScore(d.score)}`).join(", ");
+  const prios = (oldPlan.priorities || []).map((x, i) => `${i + 1}. ${x.title} (${x.urgency})`).join(" ");
+  const original = oldPlan.originalSituation || "(not recorded)";
+  const priorUpdates = (oldPlan.updates || []).map(u => `- ${u.text}`).join("\n");
+
+  return `This person already has a LifeBridge assessment and is now telling you what has changed.
+
+ORIGINAL SITUATION, as they first described it:
+"""${original}"""
+${priorUpdates ? `\nPREVIOUS UPDATES they have given since:\n${priorUpdates}\n` : ""}
+PREVIOUS ASSESSMENT:
+Situation type: ${oldPlan.crisisType}
+Stability by area: ${dims}
+LifeBridge Score: ${baselineScore(oldPlan)} of 100
+Priorities were: ${prios}
+
+WHAT THEY SAY HAS CHANGED NOW:
+"""${updateText}"""
+${crisis ? `\nSituation category: "${crisis.name}".` : ""}
+
+Produce a COMPLETE new LifeBridge Recovery Engine JSON reflecting their situation AS IT IS NOW.
+
+Reassessment rules:
+- Re-score all six dimensions for the situation now. If something genuinely improved, the score for that area should rise. If something got worse, it should fall. Do not simply repeat the previous numbers, and do not inflate them out of encouragement.
+- Re-rank the three priorities for what matters most now. A resolved priority should be replaced, not repeated.
+- Update risksToWatch for what is plausible from here.
+- Actions should be what still needs doing plus anything new. Do not re-list work they have clearly already finished.
+- The acknowledgement should name what has changed, warmly and specifically, and should reference their progress.`;
+}
+
 function buildPrompt(text, crisis) {
   let ctx = "";
   if (crisis) {
@@ -296,6 +331,19 @@ function normalizePlan(raw) {
   return {
     engineVersion: 2,
     crisisType: str(p.crisisType, 140) || "Recovery plan",
+    assessedAt: Number(p.assessedAt) || null,
+    history: arr(p.history).slice(0, 20).map(h => ({
+      score: h && h.score == null ? null : clampScore(h && h.score),
+      at: Number(h && h.at) || null,
+      kind: (h && h.kind) === "reassessment" ? "reassessment" : "initial",
+      dims: arr(h && h.dims).slice(0, 6)
+        .map(d => ({ id: str(d && d.id, 20), score: clampScore(d && d.score) }))
+        .filter(d => DIM_IDS.includes(d.id)),
+    })),
+    updates: arr(p.updates).slice(0, 20).map(u => ({
+      text: str(u && u.text, 2000), at: Number(u && u.at) || null,
+    })).filter(u => u.text),
+    originalSituation: p.originalSituation ? str(p.originalSituation, 4000) : null,
     acknowledgement: str(p.acknowledgement, 900),
     priorities,
     dimensions,
@@ -308,15 +356,20 @@ function normalizePlan(raw) {
 }
 
 /* ================================================================ scoring */
-/* The relationship the product claims: assessment sets a baseline, completing
-   roadmap actions moves the specific dimension that action supports, and the
-   LifeBridge Score is the average of the six.
+/* Two numbers, deliberately independent.
 
-   Deliberate ceiling: completing every action linked to a dimension closes at
-   most RECOVERY_CEILING of the gap to 100. Checking boxes is evidence of
-   progress, not proof of stability, and a score that hits 100 from checkboxes
-   alone would be dishonest to someone still in a hard situation. */
-const RECOVERY_CEILING = 0.5;
+   LifeBridge Score  = the most recent ASSESSMENT of the person's stability.
+                       It moves when they tell LifeBridge their situation has
+                       changed, and only then.
+
+   Recovery Progress = how much of the roadmap they have completed.
+                       It moves every time they tick a box.
+
+   An earlier version let ticking a box raise the stability score. That
+   conflated two genuinely different things: taking an action, and the action
+   having worked. Calling the landlord is progress; whether housing is actually
+   more stable depends on what the landlord said. Only the person knows that,
+   which is what Update My Situation is for. */
 
 function dimensionProgress(plan, roadmap) {
   const out = {};
@@ -330,28 +383,21 @@ function dimensionProgress(plan, roadmap) {
   return out;
 }
 
+/* Assessment scores, plus how much of the roadmap linked to each area is done.
+   The action counts are context for the reader; they do not alter the score. */
 function currentDimensions(plan, roadmap) {
   const prog = dimensionProgress(plan, roadmap);
-  return (plan.dimensions || []).map(d => {
-    const p = prog[d.id] || { total: 0, done: 0 };
-    const gain = p.total
-      ? (100 - d.score) * RECOVERY_CEILING * (p.done / p.total)
-      : 0;
-    return {
-      ...d,
-      base: d.score,
-      current: clampScore(d.score + gain),
-      actionsTotal: p.total,
-      actionsDone: p.done,
-    };
+  return ((plan && plan.dimensions) || []).map(d => {
+    const pr = prog[d.id] || { total: 0, done: 0 };
+    return { ...d, score: clampScore(d.score), actionsTotal: pr.total, actionsDone: pr.done };
   });
 }
 
-function lifeBridgeScore(plan, roadmap) {
-  const dims = currentDimensions(plan, roadmap);
-  if (!dims.length) return null;
-  const sum = dims.reduce((a, d) => a + d.current, 0);
-  return clampScore(sum / dims.length);
+/* The score is the assessment. The roadmap argument is accepted and ignored so
+   older call sites keep working, and so the signature documents the fact that
+   the roadmap deliberately does not feed into it. */
+function lifeBridgeScore(plan /*, roadmap */) {
+  return baselineScore(plan);
 }
 
 function baselineScore(plan) {
@@ -364,6 +410,216 @@ function recoveryProgress(roadmap) {
   const total = (roadmap || []).length;
   const done = (roadmap || []).filter(s => s.done).length;
   return { done, total, pct: total ? Math.round((done / total) * 100) : 0 };
+}
+
+/* ------------------------------------------------ freshness and momentum */
+/* Refusing to move the score when someone ticks a box is the right call, and
+   it creates a second problem that has to be answered or the honesty is only
+   half done: a number with no date on it reads as current even when it is a
+   month old. Silence is not the same as accuracy. What follows is how an
+   assessment-only score avoids going quietly stale.
+
+   It is also where completed work lands truthfully. An earlier version
+   rewarded effort by raising the score, which asserted the action had worked.
+   This rewards effort by counting it as effort, and by asking, at the moment
+   someone finishes everything an area needed, whether anything actually
+   changed. Same moment, same encouragement, no claim that isn't theirs to
+   make. */
+
+const DAY_MS = 86400000;
+
+const NUDGE = {
+  actionsForStrong: 3,  // real work done since the assessment was made
+  softDays: 7,          // a week old, and something has been done
+  staleDays: 14,        // a fortnight old, whatever has been done
+};
+
+function assessedAt(plan) {
+  const t = plan && Number(plan.assessedAt);
+  return Number.isFinite(t) && t > 0 ? t : null;
+}
+
+/* "today", "yesterday", "6 days ago". Returns null when the plan predates
+   this field, and the UI then says nothing rather than inventing a date. */
+function assessmentAge(plan, now) {
+  const at = assessedAt(plan);
+  if (at == null) return null;
+  const ms = Math.max(0, (now || Date.now()) - at);
+  const days = Math.floor(ms / DAY_MS);
+  const label =
+    days === 0  ? "today" :
+    days === 1  ? "yesterday" :
+    days < 14   ? days + " days ago" :
+    days < 60   ? Math.floor(days / 7) + " weeks ago" :
+                  Math.floor(days / 30) + " months ago";
+  return { at, ms, days, label };
+}
+
+/* Work completed after the current assessment was made.
+
+   Steps carry doneAt, so this stays correct across a reassessment: actions
+   finished before it are part of what was assessed, actions finished after it
+   are not yet reflected in the score. On a plan saved before assessedAt
+   existed there is nothing to compare against, so every completed action
+   counts as outstanding, which errs toward inviting a fresh assessment. */
+function actionsSinceAssessment(plan, roadmap) {
+  const at = assessedAt(plan);
+  return (roadmap || []).filter(
+    s => s && s.done && (at == null || Number(s.doneAt) > at)
+  ).length;
+}
+
+/* Whether to invite a reassessment, and how firmly.
+
+   Deliberately quiet. This is a crisis app, and a product that nags someone
+   having the worst month of their life is a product they close. One line,
+   never a modal, never on a demo, and never before there is something real to
+   report. */
+function reassessNudge(plan, roadmap, now) {
+  if (!plan || plan.isSample) return null;
+  const prog = recoveryProgress(roadmap);
+  if (!prog.total) return null;
+
+  const age = assessmentAge(plan, now);
+  const since = actionsSinceAssessment(plan, roadmap);
+
+  if (prog.done === prog.total)
+    return { level: "strong", since, age,
+             reason: "You have worked through every action on your roadmap." };
+
+  if (since >= NUDGE.actionsForStrong)
+    return { level: "strong", since, age,
+             reason: `You have completed ${since} actions since this assessment.` };
+
+  if (age && age.days >= NUDGE.staleDays)
+    return { level: "soft", since, age,
+             reason: `This assessment is from ${age.label}.` };
+
+  if (age && age.days >= NUDGE.softDays && since >= 1)
+    return { level: "soft", since, age,
+             reason: `This assessment is from ${age.label}, and you have completed ` +
+                     `${since === 1 ? "an action" : since + " actions"} since.` };
+
+  return null;
+}
+
+/* Per-area completion. An area with no actions attached is not complete, it
+   is absent, and the difference matters to the caller. */
+function dimensionMomentum(plan, roadmap) {
+  const prog = dimensionProgress(plan, roadmap);
+  const out = {};
+  DIM_IDS.forEach(id => {
+    const p = prog[id];
+    out[id] = { total: p.total, done: p.done, complete: p.total > 0 && p.done === p.total };
+  });
+  return out;
+}
+
+/* Which areas moved between two assessments, largest change first, so a
+   reassessment can say what changed instead of only swapping one number for
+   another. Reads the snapshot recordReassessment stores on history. */
+function dimensionDeltas(oldDims, newPlan) {
+  const before = {};
+  (oldDims || []).forEach(d => { if (d && d.id) before[d.id] = clampScore(d.score); });
+  return ((newPlan && newPlan.dimensions) || [])
+    .map(d => {
+      const from = before[d.id];
+      if (from == null) return null;
+      const to = clampScore(d.score);
+      if (to === from) return null;
+      return {
+        id: d.id,
+        label: (DIM_BY_ID[d.id] && DIM_BY_ID[d.id].label) || d.id,
+        from, to, delta: to - from,
+      };
+    })
+    .filter(Boolean)
+    .sort((a, b) => Math.abs(b.delta) - Math.abs(a.delta));
+}
+
+function lastAssessmentDims(plan) {
+  const h = plan && plan.history;
+  if (!h || !h.length) return null;
+  const dims = h[h.length - 1].dims;
+  return Array.isArray(dims) && dims.length ? dims : null;
+}
+
+/* ------------------------------------------------------- assessment history */
+/* Kept inside the plan map rather than as new top-level document fields,
+   because firestore.rules whitelists top-level keys and would reject them. */
+
+function assessmentCount(plan) {
+  return 1 + ((plan && plan.history && plan.history.length) || 0);
+}
+
+function previousScore(plan) {
+  const h = plan && plan.history;
+  if (!h || !h.length) return null;
+  return clampScore(h[h.length - 1].score);
+}
+
+function isReassessed(plan) {
+  return !!(plan && plan.history && plan.history.length);
+}
+
+/* Fold the current assessment into history and stamp the new one on top. */
+function recordReassessment(oldPlan, newPlan, updateText) {
+  const now = Date.now();
+  const prevScore = baselineScore(oldPlan);
+  const history = ((oldPlan && oldPlan.history) || []).slice(0, 19);
+  history.push({
+    score: prevScore == null ? null : clampScore(prevScore),
+    at: (oldPlan && oldPlan.assessedAt) || now,
+    kind: history.length ? "reassessment" : "initial",
+    // The six areas as they stood, so the next render can say which ones moved
+    // and by how much, rather than only replacing one total with another.
+    dims: ((oldPlan && oldPlan.dimensions) || [])
+      .map(d => ({ id: d.id, score: clampScore(d.score) })),
+  });
+  const updates = ((oldPlan && oldPlan.updates) || []).slice(0, 19);
+  updates.push({ text: String(updateText || "").slice(0, 2000), at: now });
+
+  newPlan.history = history;
+  newPlan.updates = updates;
+  newPlan.assessedAt = now;
+  // Provenance of the original description survives every reassessment.
+  newPlan.originalSituation = (oldPlan && (oldPlan.originalSituation || oldPlan.situationSeed)) || null;
+  return newPlan;
+}
+
+/* Merge a fresh roadmap into the existing one after a reassessment.
+
+   Completed work is never removed: someone who called 211 last week did call
+   211, whatever the new assessment says. Outstanding steps survive only if the
+   new assessment still recommends them, so the roadmap does not silently grow
+   stale advice. Genuinely new steps are flagged so the UI can point them out. */
+function mergeRoadmap(oldRoadmap, newPlan) {
+  const fresh = seedRoadmapFromPlan(newPlan);
+  const freshLabels = new Set(fresh.map(f => f.label));
+  const out = [];
+  const kept = new Set();
+
+  (oldRoadmap || []).forEach(s => {
+    if (s.done || freshLabels.has(s.label)) {
+      const match = fresh.find(f => f.label === s.label);
+      out.push({
+        ...s,
+        // refresh the reasoning and urgency from the newer assessment
+        detail: match ? match.detail : s.detail,
+        when: match ? match.when : s.when,
+        dimension: match ? match.dimension : s.dimension,
+        isNew: false,
+        retired: s.done ? false : !freshLabels.has(s.label),
+      });
+      kept.add(s.label);
+    }
+  });
+
+  fresh.forEach(f => {
+    if (!kept.has(f.label)) { out.push({ ...f, isNew: true }); kept.add(f.label); }
+  });
+
+  return out;
 }
 
 /* Build the tracked roadmap from a plan. Document gathering is included as real
@@ -682,6 +938,29 @@ const DEMO_SCENARIO = DEMO_SCENARIOS.find(d => d.recommended) || DEMO_SCENARIOS[
 
 function demoById(id) { return DEMO_BY_ID[id] || DEMO_SCENARIO; }
 
+/* ---------------------------------------------------------------- location */
+/* US emergency numbers are the right default for this app, but telling someone
+   standing in another country to "call 911" is useless at best. This is a
+   deliberately conservative text signal rather than geolocation: it only trips
+   on clear statements of being abroad, and when it does the guidance becomes
+   generic and routes through the embassy instead of naming a number that may
+   not exist where they are. */
+function looksAbroad(text, crisisId) {
+  if (crisisId === "travel") return true;
+  const s = String(text || "").toLowerCase();
+  return /(abroad|overseas|another country|foreign country|out of the country|outside the us|outside the united states|while travell?ing|on holiday|on vacation abroad|embassy|consulate|my passport was|lost my passport)/.test(s);
+}
+
+const ABROAD_EMERGENCY = {
+  lead: "You appear to be outside the United States, so US emergency numbers may not reach anyone where you are.",
+  steps: [
+    { label: "Local emergency services", note: "If anyone is in immediate danger, contact the emergency number for the country you are currently in. Your hotel, host or a nearby business can tell you what it is." },
+    { label: "Nearest US embassy or consulate", note: "For US citizens: emergency passports, contacting family, and guidance on local options.", url: "https://www.usembassy.gov" },
+    { label: "Local police", note: "A police report is usually required before an insurer, a bank or an embassy can act." },
+    { label: "US State Department, overseas emergencies", note: "Official guidance and the 24/7 line for US citizens abroad.", url: "https://travel.state.gov/content/travel/en/international-travel/emergencies.html" },
+  ],
+};
+
 /* ========================================================= resource catalog */
 /* Curated, mostly official sources, mapped to crisis modules. This sits
    alongside the live map rather than replacing it: the map answers "what is
@@ -708,6 +987,15 @@ const RESOURCE_CATALOG = {
     { name: "School meal programs", what: "Free and reduced-price meals at public schools",
       why: "Reduces household food cost immediately and is usually quick to apply for.",
       url: "https://www.fns.usda.gov/nslp", tag: "Family" },
+    { name: "Emergency rental assistance", what: "Local housing agency and HUD programmes",
+      why: "A household that has lost its main earner may qualify for help before rent is late.",
+      url: "https://www.hud.gov/topics/rental_assistance", tag: "Housing" },
+    { name: "School counselor and family support", what: "Counselors and family liaisons at your children's schools",
+      why: "Schools can adjust expectations, watch for changes, and connect a grieving family with local support.",
+      url: "https://www.schoolcounselor.org", tag: "Family" },
+    { name: "Grief support for children and adults", what: "Peer grief support, including programmes built for children",
+      why: "Children grieve differently from adults and often need their own support alongside a parent's.",
+      url: "https://www.dougy.org", tag: "Health" },
   ],
   disaster: [
     { name: "FEMA disaster assistance", what: "Federal help after a declared disaster",
@@ -856,6 +1144,60 @@ function resourcesForCrisis(crisisId) {
   return specific.concat(RESOURCE_CATALOG._always);
 }
 
+/* Rank the curated list against the actual assessment, not just the category.
+
+   Two people both pick "loss of a spouse". One has savings and stable housing
+   but children struggling; the other has no income and rent due. The same list
+   in the same order serves neither of them well. Ordering here is driven by
+   their three priorities, their weakest areas, and what is still outstanding on
+   their roadmap.
+
+   Nothing is removed, only reordered, so a resource that matters to someone is
+   never hidden because the ranking disagreed. */
+function rankResources(list, plan, roadmap) {
+  if (!plan || !plan.dimensions || !plan.dimensions.length) {
+    return (list || []).map(r => ({ ...r, personalWhy: "" }));
+  }
+
+  const prioDims = (plan.priorities || []).map(x => x.dimension);
+  const weakest = plan.dimensions.slice()
+    .sort((a, b) => clampScore(a.score) - clampScore(b.score))
+    .slice(0, 2).map(d => d.id);
+
+  const openByDim = {};
+  (roadmap || []).forEach(s => {
+    if (s.dimension && !s.done) openByDim[s.dimension] = (openByDim[s.dimension] || 0) + 1;
+  });
+
+  const scored = (list || []).map((r, i) => {
+    const dim = matchDimension(`${r.tag || ""} ${r.name || ""} ${r.what || ""}`);
+    let weight = 0;
+    const reasons = [];
+
+    const prioIdx = dim ? prioDims.indexOf(dim) : -1;
+    if (prioIdx === 0) { weight += 6; reasons.push("top"); }
+    else if (prioIdx > 0) { weight += 4; reasons.push("prio"); }
+
+    if (dim && weakest.includes(dim)) { weight += 3; reasons.push("weak"); }
+    if (dim && openByDim[dim]) { weight += Math.min(2, openByDim[dim]); reasons.push("open"); }
+
+    const label = dim && DIM_BY_ID[dim] ? DIM_BY_ID[dim].label : null;
+    let personalWhy = "";
+    if (label) {
+      if (reasons.includes("top"))       personalWhy = `${label} is your top priority right now.`;
+      else if (reasons.includes("prio")) personalWhy = `${label} is one of your current priorities.`;
+      else if (reasons.includes("weak")) personalWhy = `${label} is one of your lowest-scoring areas.`;
+      else if (reasons.includes("open")) personalWhy = `You still have roadmap actions open under ${label}.`;
+    }
+
+    return { ...r, personalWhy, _w: weight, _i: i };
+  });
+
+  // stable sort: weight first, original curated order as the tie-break
+  return scored.sort((a, b) => (b._w - a._w) || (a._i - b._i))
+               .map(({ _w, _i, ...r }) => r);
+}
+
 /* ========================================================= offline fallback */
 /* Used when the live planner cannot be reached. Honest rather than clever: it
    says plainly that it is a general framework and points at a live human. */
@@ -930,7 +1272,10 @@ window.LBEngine = {
   ACRE_SYSTEM, buildPrompt, normalizePlan, normalizeDimension, matchDimension, normalizeWhen,
   scoreBand, clampScore, currentDimensions, lifeBridgeScore, baselineScore,
   recoveryProgress, seedRoadmapFromPlan, nextAction, dimensionProgress,
+  assessedAt, assessmentAge, actionsSinceAssessment, reassessNudge,
+  dimensionMomentum, dimensionDeltas, lastAssessmentDims, NUDGE,
+  assessmentCount, previousScore, isReassessed, recordReassessment, mergeRoadmap,
   DEMO_SCENARIO, DEMO_SCENARIOS, DEMO_BY_ID, demoById,
-  RESOURCE_CATALOG, resourcesForCrisis, fallbackPlan,
-  RECOVERY_CEILING,
+  RESOURCE_CATALOG, resourcesForCrisis, rankResources, fallbackPlan,
+  buildReassessPrompt, looksAbroad, ABROAD_EMERGENCY,
 };

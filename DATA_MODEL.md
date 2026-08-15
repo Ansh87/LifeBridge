@@ -86,6 +86,15 @@ never bloat or corrupt a stored document.
   "actions": [                                                // 4 to 8
     { "when": "today", "task": "...", "why": "...", "dimension": "financial" }
   ],
+  // reassessment history, kept inside the plan map because firestore.rules
+  // whitelists top-level document keys and would reject new ones
+  "assessedAt":        1786800000000,
+  "originalSituation": "how they first described it, preserved verbatim",
+  "history": [{ "score": 42, "at": 1786700000000, "kind": "initial",
+                // the six areas as they stood, so a reassessment can say which
+                // ones moved rather than only replacing one total with another
+                "dims": [{ "id": "housing", "score": 34 }] }],
+  "updates": [{ "text": "what they said had changed", "at": 1786800000000 }],
   "documents":    ["Death certificate, several certified copies"],
   "helpers":      [{ "who": "...", "what": "...", "how": "..." }],
   "risksToWatch": [{ "risk": "...", "why": "...", "prevent": "..." }]
@@ -112,6 +121,29 @@ before this engine existed still opens into the current experience rather than
 a half-empty screen. Legacy fields are preserved on re-save rather than
 stripped. `tests/` covers this path.
 
+### Reassessment
+
+`Update my situation` re-runs the engine with the original description, the
+previous assessment, and what the person says has changed. The result replaces
+the assessment; it does not replace their work.
+
+- Completed actions are **never** removed. Someone who called 211 last week did
+  call 211, whatever the new assessment concludes.
+- Outstanding actions survive only if the new assessment still recommends them,
+  so the roadmap does not accumulate stale advice.
+- Genuinely new actions are flagged `isNew` for one render.
+- The previous score **and its six area scores** are pushed onto `history`,
+  which is what the `42 → 57` pairing on the plan card and the per-area
+  breakdown after a reassessment are drawn from. That pairing is always a
+  reassessment delta, never a side effect of ticking boxes.
+- Because the breakdown is stored rather than held in memory, it survives a
+  reload and appears on the person's other devices, and it ages off the screen
+  on its own after a day.
+
+If the planner is unreachable mid-reassessment the existing plan is left
+completely untouched. Losing a working plan because a request timed out would
+be a worse failure than not updating it.
+
 ### `roadmap`
 
 ```jsonc
@@ -121,11 +153,49 @@ stripped. `tests/` covers this path.
    "done": false, "doneAt": null }]
 ```
 
-`dimension` is what connects the roadmap back to the score. Completing an
-action raises only the area it supports, and completing every action linked to
-an area closes at most **half** the remaining gap to 100. A checkbox is
-evidence of progress, not proof of stability, and a score that reached 100 from
-checkboxes alone would be dishonest to someone still in a hard situation.
+`dimension` records the area an action is *intended* to support. It does not
+feed the score.
+
+**The two numbers are independent, on purpose.**
+
+| | Answers | Moves when | Carries |
+|---|---|---|---|
+| LifeBridge Score | Where does this person stand? | They tell LifeBridge their situation changed, and it reassesses | The date it was taken |
+| Recovery Progress | What have they done? | They tick a roadmap action | How much of it happened since that date |
+
+An earlier version let ticking a box raise the stability score. That conflated
+two genuinely different things: taking an action, and the action having worked.
+Calling the landlord is progress; whether housing is actually more secure
+depends on what the landlord said, and only the person knows that. Conflating
+them meant a score could climb while someone's life got worse.
+
+### What the separation costs, and what pays for it
+
+Splitting them fixes the lie and introduces two costs, both real, both worth
+naming rather than pretending away.
+
+The first is staleness. A score that only moves on reassessment will sit
+unchanged for weeks, and a number with no date on it reads as current. So
+`assessedAt` travels with the score everywhere the score is drawn, and
+`assessmentAge()` turns it into "assessed 6 days ago". Silence is not the same
+as accuracy.
+
+The second is that effort stops being acknowledged. The old model's one real
+virtue was that doing the work moved something visible. Three things replace
+it without reintroducing the false claim:
+
+| | What it is |
+|---|---|
+| `actionsSinceAssessment()` | Work completed after the current assessment, counted as work, not as improvement. Reads `doneAt` against `assessedAt`, so it resets when a reassessment catches up. |
+| `dimensionMomentum()` | Which areas have had every attached action completed. Finishing one is the moment the old model used to move the score at; it is the right moment for encouragement, and the wrong moment to assume an outcome. |
+| `reassessNudge()` | Whether to invite a reassessment. Three actions completed, or a finished roadmap, is a strong invitation; a week old with work done, or a fortnight old regardless, is a soft one. Never on a demo, never without a roadmap, never as a modal. |
+
+The invitation is deliberately quiet. This is a crisis app, and a product that
+nags someone having the worst month of their life is a product they close. It
+is one line with one button, dismissible for the session, and it comes back on
+the next visit if the situation still warrants it, because a permanently
+silenced prompt is how a score gets to be three months old without anyone
+noticing.
 
 `done` is the field that changes most often in the whole app. It is what a
 user touches while recovering. Writes are debounced 700 ms in

@@ -28,6 +28,13 @@ const CORS = {
   "Content-Type": "application/json",
 };
 
+// Friendly, non-technical, and never echoes back what was sent.
+const bad = (msg) => ({
+  statusCode: 400,
+  headers: CORS,
+  body: JSON.stringify({ error: msg }),
+});
+
 exports.handler = async (event) => {
   if (event.httpMethod === "OPTIONS") return { statusCode: 204, headers: CORS, body: "" };
 
@@ -65,16 +72,38 @@ exports.handler = async (event) => {
       body: JSON.stringify({ error: "AI is not configured.", reason: "GEMINI_API_KEY missing" }),
     };
 
+  // ---- request limits ------------------------------------------------------
+  // The endpoint is deliberately unauthenticated, because requiring a login
+  // would break guest and demo mode, which are the point of the product. These
+  // bounds are what stands in for that: they reject obviously abnormal traffic
+  // without getting in the way of a real assessment. Ceilings are generous,
+  // sized against the largest legitimate request the app makes (a reassessment
+  // prompt carrying the original situation, prior assessment and the update).
+  const LIMITS = { body: 96 * 1024, prompt: 16000, system: 20000, maxTokens: 8192 };
+
+  const rawBody = event.body || "{}";
+  if (rawBody.length > LIMITS.body)
+    return bad("That request is too large. Try shortening your description.");
+
   let payload;
   try {
-    payload = JSON.parse(event.body || "{}");
+    payload = JSON.parse(rawBody);
   } catch {
-    return { statusCode: 400, headers: CORS, body: JSON.stringify({ error: "Bad request." }) };
+    return bad("Bad request.");
   }
+  if (!payload || typeof payload !== "object" || Array.isArray(payload))
+    return bad("Bad request.");
 
   const { prompt, system, json, maxTokens } = payload;
-  if (!prompt)
-    return { statusCode: 400, headers: CORS, body: JSON.stringify({ error: "Missing prompt." }) };
+
+  if (typeof prompt !== "string" || !prompt.trim())
+    return bad("Missing prompt.");
+  if (prompt.length > LIMITS.prompt)
+    return bad("That description is too long. Try shortening it and sending again.");
+  if (system != null && (typeof system !== "string" || system.length > LIMITS.system))
+    return bad("Bad request.");
+  if (maxTokens != null && (!Number.isFinite(Number(maxTokens)) || Number(maxTokens) < 1))
+    return bad("Bad request.");
 
   const body = {
     contents: [{ role: "user", parts: [{ text: prompt }] }],
@@ -82,7 +111,7 @@ exports.handler = async (event) => {
       temperature: 0.6,
       // The engine schema is large. Too small a budget truncates the JSON
       // mid-object, which surfaces as an unexplained parse failure.
-      maxOutputTokens: Math.min(Math.max(Number(maxTokens) || 2048, 512), 8192),
+      maxOutputTokens: Math.min(Math.max(Number(maxTokens) || 2048, 512), LIMITS.maxTokens),
       ...(json ? { responseMimeType: "application/json" } : {}),
     },
     ...(system ? { systemInstruction: { parts: [{ text: system }] } } : {}),

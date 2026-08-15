@@ -261,6 +261,9 @@ async function boot() {
     }
     if ("score" in patch) out.score = patch.score == null ? null : clampScore(patch.score);
     if ("title" in patch) out.title = String(patch.title || "Recovery plan").slice(0, 140);
+    // A reassessment rewrites the assessment itself, so the plan body travels
+    // with it. Ticking a checkbox does not, which keeps that write cheap.
+    if (patch.plan) out.plan = sanitizePlan(patch.plan);
     if ("archived" in patch) out.archived = !!patch.archived;
 
     await updateDoc(planRef(uid, id), out);
@@ -480,6 +483,23 @@ function sanitizePlan(p) {
     crisisType: str(p.crisisType, 140),
     acknowledgement: str(p.acknowledgement, 1200),
     isSample: !!p.isSample,
+    // Reassessment history lives inside the plan map because firestore.rules
+    // whitelists top-level document keys and would reject new ones.
+    assessedAt: Number(p.assessedAt) || null,
+    originalSituation: str(p.originalSituation, 4000) || null,
+    history: arr(p.history, 20).map((h) => ({
+      score: h && h.score == null ? null : num(h && h.score),
+      at: Number(h && h.at) || null,
+      kind: (h && h.kind) === "reassessment" ? "reassessment" : "initial",
+      // Six small numbers per entry, which is what lets a reopened plan still
+      // say which areas moved at the last reassessment.
+      dims: arr(h && h.dims, 6).map((d) => ({
+        id: str(d && d.id, 20), score: num(d && d.score),
+      })),
+    })),
+    updates: arr(p.updates, 20).map((u) => ({
+      text: str(u && u.text, 2000), at: Number(u && u.at) || null,
+    })),
     priorities: arr(p.priorities, 3).map((x) => ({
       title: str(x && x.title, 120),
       urgency: ["High", "Medium", "Low"].includes(x && x.urgency) ? x.urgency : "Medium",
