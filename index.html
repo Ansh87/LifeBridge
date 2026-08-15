@@ -373,6 +373,19 @@ body.modal-open{overflow:hidden}
 .pc-next b{display:block;font-size:.66rem;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3);margin-bottom:3px}
 .pc-next span{font-size:.82rem;color:var(--ink-2);line-height:1.4}
 
+/* ---------- Demo picker ---------- */
+.demo-list{display:flex;flex-direction:column;gap:10px;margin:18px 0 4px}
+.demo-opt{display:flex;flex-direction:column;gap:5px;text-align:left;width:100%;
+  background:var(--panel);border:1px solid var(--line);border-radius:var(--r-md);padding:15px 16px;transition:.16s}
+.demo-opt:hover{border-color:var(--amber);background:var(--panel-2);transform:translateY(-1px)}
+.demo-opt.rec{border-color:rgba(244,168,74,.45)}
+.demo-head{display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+.demo-head strong{font-size:.98rem;font-weight:600}
+.demo-rec{font-size:.64rem;letter-spacing:.1em;text-transform:uppercase;font-weight:700;
+  color:var(--amber);background:rgba(244,168,74,.14);border-radius:20px;padding:3px 9px}
+.demo-blurb{font-size:.82rem;color:var(--ink-3);line-height:1.5}
+.demo-note{font-size:.76rem;color:var(--ink-3);margin-top:14px}
+
 /* ---------- Assistant suggestions ---------- */
 .chat-suggest{display:flex;gap:6px;flex-wrap:wrap;padding:0 12px 10px}
 .chat-suggest .chip{font-size:.74rem;padding:6px 11px}
@@ -625,7 +638,7 @@ body.gated{overflow:hidden}
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 3v18M3 12h18" stroke="#22160a" stroke-width="2.4" stroke-linecap="round"/></svg>
           Start my recovery plan
         </button>
-        <button class="btn btn-ghost cta-lg" onclick="runDemo()">
+        <button class="btn btn-ghost cta-lg" onclick="openDemoPicker()" aria-haspopup="dialog">
           <svg width="17" height="17" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M6 4l14 8-14 8V4z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
           Try demo
         </button>
@@ -647,7 +660,7 @@ body.gated{overflow:hidden}
 
     <!-- How LifeBridge works: the same six words used everywhere else -->
     <div class="section">
-      <div class="section-head"><div><h2>How LifeBridge works</h2><p>The same six steps, every situation.</p></div></div>
+      <div class="section-head"><div><h2>How LifeBridge works</h2><p>Six-step framework, personalized recommendations for each situation.</p></div></div>
       <ol class="steps" id="howSteps"></ol>
     </div>
 
@@ -778,6 +791,17 @@ body.gated{overflow:hidden}
     <button class="close" onclick="closeModal('aboutModal')" aria-label="Close">×</button>
     <h3 id="aboutTitle">About LifeBridge</h3>
     <div id="aboutBody"></div>
+  </div>
+</div>
+
+<!-- Demo picker -->
+<div class="modal-bg" id="demoModal" role="dialog" aria-modal="true" aria-labelledby="demoTitle">
+  <div class="modal">
+    <button class="close" onclick="closeModal('demoModal')" aria-label="Close">×</button>
+    <h3 id="demoTitle">Try a demo</h3>
+    <p>Three written examples, no typing and no account. Each runs through the same Recovery Engine your own situation would.</p>
+    <div class="demo-list" id="demoList"></div>
+    <p class="demo-note">All three are fictional scenarios. Nothing in them describes a real person.</p>
   </div>
 </div>
 
@@ -1127,15 +1151,32 @@ async function runNavigator(opts){
    scenario and runs the real engine over it, so a first-time viewer sees the
    genuine output rather than a mock. If the planner is unreachable it falls
    back to the scenario's own authored plan, so the walkthrough always works. */
-function runDemo(){
-  const d = E.DEMO_SCENARIO;
+function openDemoPicker(){
+  document.getElementById("demoList").innerHTML = E.DEMO_SCENARIOS.map(d=>`
+    <button class="demo-opt${d.recommended?" rec":""}" onclick="runDemo('${esc(d.id)}')">
+      <span class="demo-head">
+        <strong>${esc(d.label)}</strong>
+        ${d.recommended?`<span class="demo-rec">Recommended</span>`:""}
+      </span>
+      <span class="demo-blurb">${esc(d.blurb)}</span>
+    </button>`).join("");
+  openModal("demoModal");
+}
+
+/* One tap, no typing, no account. Pre-fills the assessment with a written
+   scenario and runs the real engine over it, so a first-time viewer sees genuine
+   output rather than a mock. If the planner is unreachable it falls back to that
+   scenario's own authored plan, so the walkthrough always works. */
+function runDemo(id){
+  const d = E.demoById(id);
+  closeModal("demoModal");
   STATE.activeCrisis = d.crisisId;
   go("navigator");
   const input = document.getElementById("navInput");
   input.value = d.text;
-  document.getElementById("navTitle").textContent = "Demo scenario, sample data";
+  document.getElementById("navTitle").textContent = `Demo: ${d.label}`;
   document.getElementById("navHint").textContent =
-    "This is a written example, not a real person. It runs through exactly the same Recovery Engine your own situation would.";
+    "A written example, not a real person. It runs through exactly the same Recovery Engine your own situation would.";
   runNavigator({ text: d.text, sample: true, demoPlan: d.plan });
 }
 
@@ -1305,7 +1346,7 @@ function renderRoadmap(){
     out.innerHTML = `<div class="roadmap"><p style="color:var(--ink-2)">No roadmap yet. Start an assessment and your steps will appear here to track.</p>
       <div class="cta-row" style="margin-top:14px">
         <button class="btn btn-amber cta-lg" onclick="go('navigator')">Start my recovery plan →</button>
-        <button class="btn btn-ghost cta-lg" onclick="runDemo()">Try the demo</button>
+        <button class="btn btn-ghost cta-lg" onclick="openDemoPicker()" aria-haspopup="dialog">Try the demo</button>
       </div></div>`;
     return;
   }
@@ -2041,7 +2082,7 @@ async function renderPlans(){
 
   sync.innerHTML = `${plans.length} saved`;
   if(!plans.length){
-    out.innerHTML = `<div class="empty-note"><p style="margin-bottom:14px">You do not have a saved recovery plan yet.</p><div class="cta-row" style="justify-content:center"><button class="btn btn-amber cta-lg" onclick="go('navigator')">Start my recovery plan</button><button class="btn btn-ghost cta-lg" onclick="runDemo()">Try demo</button></div></div>`;
+    out.innerHTML = `<div class="empty-note"><p style="margin-bottom:14px">You do not have a saved recovery plan yet.</p><div class="cta-row" style="justify-content:center"><button class="btn btn-amber cta-lg" onclick="go('navigator')">Start my recovery plan</button><button class="btn btn-ghost cta-lg" onclick="openDemoPicker()" aria-haspopup="dialog">Try demo</button></div></div>`;
     return;
   }
 
