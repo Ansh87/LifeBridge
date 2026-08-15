@@ -860,7 +860,7 @@ function resourcesForCrisis(crisisId) {
 /* Used when the live planner cannot be reached. Honest rather than clever: it
    says plainly that it is a general framework and points at a live human. */
 function fallbackPlan(text, crisis) {
-  const c = crisis || { name: "your situation", id: null };
+  const c = crisis || { name: "Your situation", id: null };
   const lower = String(text || "").toLowerCase();
   const safetyFlag = /(hurt|hit|abuse|threat|unsafe|afraid|scared|violent|kill|suicid|harm)/.test(lower);
 

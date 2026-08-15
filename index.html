@@ -377,6 +377,11 @@ body.modal-open{overflow:hidden}
 .demo-blurb{font-size:.82rem;color:var(--ink-3);line-height:1.5}
 .demo-note{font-size:.76rem;color:var(--ink-3);margin-top:14px}
 
+.home-meta{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin:12px 0 4px}
+.home-meta-txt{font-size:.82rem;color:var(--ink-3)}
+.home-meta-txt b{color:var(--ink-2);font-weight:600}
+.mini-btn.danger{border-color:var(--danger);color:var(--danger)}
+
 /* ---------- Assistant suggestions ---------- */
 .chat-suggest{display:flex;gap:6px;flex-wrap:wrap;padding:0 12px 10px}
 .chat-suggest .chip{font-size:.74rem;padding:6px 11px}
@@ -637,11 +642,12 @@ body.gated{overflow:hidden}
     <!-- Bridge / score -->
     <div class="bridge-wrap">
       <div class="bridge-stage">
-        <h3>Your LifeBridge Score</h3>
+        <h3 id="homeScoreHead">Your LifeBridge Score</h3>
         <div class="bridge-score-row">
           <div class="bridge-score" id="homeScore">·</div>
           <div class="bridge-state" id="homeState">Start an assessment to measure where you stand across housing, food, health, finances, and safety.</div>
         </div>
+        <div class="home-meta" id="homeMeta"></div>
         <svg class="bridge-svg" id="bridgeSvg" viewBox="0 0 600 120" preserveAspectRatio="none" aria-hidden="true"></svg>
       </div>
     </div>
@@ -928,6 +934,74 @@ function go(name, opts){
   if(name==="plans") renderPlans();
 }
 
+/* The home screen used to present whatever was left in localStorage as "your
+   LifeBridge Score", with nothing said about where it came from. Run the demo
+   and a fictional family's score became yours. Build a plan without signing in
+   and there was no sign it existed only in this browser. Both were misleading
+   in the same way: the number was shown without its provenance. */
+function renderHomeMeta(){
+  const el = document.getElementById("homeMeta");
+  if(!el) return;
+  const p = STATE.lastPlan;
+  const head = document.getElementById("homeScoreHead");
+
+  if(!p){
+    el.innerHTML = "";
+    if(head) head.textContent = "Your LifeBridge Score";
+    return;
+  }
+
+  const title = esc(p.crisisType || "Recovery plan");
+
+  if(STATE.isSample){
+    // A demo must never read as the person's own situation.
+    if(head) head.textContent = "Demo scenario score";
+    el.innerHTML =
+      `<span class="status sample"><span class="dot"></span>Demo scenario, sample data</span>
+       <span class="home-meta-txt">This is the example plan for <b>${title}</b>, not your situation.</span>
+       <button class="mini-btn" onclick="clearPlan(this)">Clear demo</button>`;
+    return;
+  }
+
+  if(head) head.textContent = "Your LifeBridge Score";
+  const saved = !!STATE.cloudPlanId;
+  el.innerHTML =
+    `<span class="home-meta-txt"><b>${title}</b></span>
+     ${saved
+       ? `<span class="status live"><span class="dot"></span>Saved to your account</span>`
+       : `<span class="status offline"><span class="dot"></span>On this device only</span>`}
+     ${saved ? "" : `<button class="mini-btn" onclick="go('roadmap')">Open plan</button>`}
+     <button class="mini-btn" onclick="clearPlan(this)">Clear</button>`;
+}
+
+/* Two-step, because for an unsaved plan this is destructive and there is no
+   undo. Same pattern as deleting a saved plan. */
+let clearArmed = false;
+function clearPlan(btn){
+  if(!clearArmed){
+    clearArmed = true;
+    const was = btn.textContent;
+    btn.textContent = STATE.cloudPlanId || STATE.isSample ? "Clear it?" : "Clear? Not saved anywhere";
+    btn.classList.add("danger");
+    setTimeout(()=>{ clearArmed = false; if(btn && btn.isConnected){ btn.textContent = was; btn.classList.remove("danger"); } }, 5000);
+    return;
+  }
+  clearArmed = false;
+  STATE.lastPlan = null;
+  STATE.roadmap = [];
+  STATE.score = null;
+  STATE.isSample = false;
+  STATE.activeCrisis = null;
+  STATE.situationText = "";
+  STATE.cloudPlanId = null;
+  saveState();
+  resetNavigator();
+  updateScoreUI();
+  renderChatContext();
+  toast("Cleared. Saved plans in your account are untouched.");
+  announce("Plan cleared from this device.");
+}
+
 /* ---------- The bridge SVG (signature) ---------- */
 function drawBridge(score){
   const svg = document.getElementById("bridgeSvg");
@@ -960,9 +1034,10 @@ function updateScoreUI(){
   const s = STATE.score;
   const scoreEl = document.getElementById("homeScore");
   const stateEl = document.getElementById("homeState");
-  if(s==null){ scoreEl.textContent="·"; scoreEl.className="bridge-score"; drawBridge(null); return; }
+  if(s==null){ scoreEl.textContent="·"; scoreEl.className="bridge-score"; renderHomeMeta(); drawBridge(null); return; }
   scoreEl.textContent = s;
   scoreEl.className = "bridge-score " + (s>=66?"":s>=33?"mid":"low");
+  renderHomeMeta();
   const band = E.scoreBand(s);
   const words = s>=80?"You're on stable ground. Keep the momentum.":
                 s>=55?"Making real progress. A few key steps remain.":
@@ -1157,6 +1232,7 @@ function startFresh(){
   STATE.isSample = false;
   saveState();
   resetNavigator();
+  renderChatContext();
   go("navigator");
   document.getElementById("navInput").focus();
 }
@@ -1552,17 +1628,60 @@ function renderResList(places, withHotlines){
 
 /* ---------- Chatbot ---------- */
 let chatHistory=[];
+let chatContextKey = null;   // what the current greeting was written for
+
+/* The assistant answers from whatever plan is loaded, which is useful, but it
+   was claiming "I can see your recovery plan" regardless of whether that plan
+   was the person's own, a demo, or something they had already moved on from.
+   This returns exactly what it can see so nothing has to be implied. */
+function chatContext(){
+  const p = STATE.lastPlan;
+  if(!p) return { mode:"none", key:"none" };
+  const label = p.crisisType || "your recovery plan";
+  if(STATE.isSample) return { mode:"sample", plan:p, label, key:"sample:"+label };
+  return { mode:"plan", plan:p, label, key:"plan:"+label+":"+(STATE.cloudPlanId||"local") };
+}
+
+function chatGreeting(ctx){
+  if(ctx.mode === "sample")
+    return `You are looking at the ${ctx.label} demo, which uses sample data rather than your own situation. Ask me anything about how the plan was built, or start your own assessment and I will work from that instead. If you are ever in immediate danger, call 911 or 988 right away.`;
+  if(ctx.mode === "plan")
+    return `I can see your ${ctx.label} plan. Ask me about any step in it, why something is a priority, or what to do first. If you are ever in immediate danger, call 911 or 988 right away.`;
+  return "I am here to help you think through whatever you are facing. Tell me what is going on, or start an assessment and I can walk you through the plan. If you are ever in immediate danger, call 911 or 988 right away.";
+}
+
+/* Keeps the panel header truthful at all times, so the person never has to
+   guess which plan the answers are about. */
+function renderChatContext(){
+  const sub = document.getElementById("chatSub");
+  if(sub){
+    const ctx = chatContext();
+    sub.textContent =
+      ctx.mode === "sample" ? `Demo: ${ctx.label} (sample data)` :
+      ctx.mode === "plan"   ? `Working from: ${ctx.label}` :
+                              "No plan yet";
+  }
+  renderChatSuggestions();
+}
+
 function toggleChat(){
   const panel = document.getElementById("chatPanel");
   const open = panel.classList.toggle("open");
   const fab = document.getElementById("chatFab");
   if(fab) fab.setAttribute("aria-expanded", String(open));
-  if(open && !chatHistory.length){
-    botSay(STATE.lastPlan
-      ? "I can see your recovery plan. Ask me about any step in it, why something is a priority, or what to do first. If you are ever in immediate danger, call 911 or 988 right away."
-      : "I am here to help you think through whatever you are facing. Tell me what is going on, or start an assessment and I can walk you through the plan. If you are ever in immediate danger, call 911 or 988 right away.");
+  if(!open) return;
+
+  const ctx = chatContext();
+  // Re-greet whenever the context has changed since the last greeting. The old
+  // code greeted once ever, so a greeting written for a demo stayed at the top
+  // of the transcript after the person had moved on to their own plan.
+  if(ctx.key !== chatContextKey){
+    if(chatHistory.length) botSay("Context changed. " + chatGreeting(ctx));
+    else                   botSay(chatGreeting(ctx));
+    chatContextKey = ctx.key;
   }
-  if(open){ renderChatSuggestions(); document.getElementById("chatInput").focus(); }
+  renderChatContext();
+  document.getElementById("chatInput").focus();
 }
 
 /* Suggestions change with the state of the plan, so the assistant reads as
@@ -1570,11 +1689,14 @@ function toggleChat(){
 function renderChatSuggestions(){
   const el = document.getElementById("chatSuggest");
   if(!el) return;
-  const p = STATE.lastPlan;
+  const ctx = chatContext();
   let qs;
-  if(!p){
-    qs = ["What can LifeBridge do?", "I am not sure where to start", "What if I am not in a crisis yet?"];
+  if(ctx.mode === "none"){
+    qs = ["What can LifeBridge do?", "I am not sure where to start", "How is the score worked out?"];
+  }else if(ctx.mode === "sample"){
+    qs = ["How was this demo plan built?", "Why is housing the top priority here?", "How would this differ for me?", "How is the score worked out?"];
   }else{
+    const p = ctx.plan;
     const next = E.nextAction(STATE.roadmap);
     const topPrio = (p.priorities||[])[0];
     qs = ["What should I do first?"];
@@ -1607,21 +1729,24 @@ async function sendChat(){
   chatHistory.push({role:"me",t:text});
   b.innerHTML += `<div class="msg bot typing" id="typing">thinking…</div>`;
   b.scrollTop=b.scrollHeight;
-  const plan = STATE.lastPlan;
+  const ctx = chatContext();
+  const plan = ctx.plan;
   let planCtx = "";
   if(plan){
     const dims = E.currentDimensions(plan, STATE.roadmap);
     const next = E.nextAction(STATE.roadmap);
     const prog = E.recoveryProgress(STATE.roadmap);
     planCtx =
-      `\n\nTHIS PERSON'S ACTIVE RECOVERY PLAN (use it, refer to it specifically):` +
+      (ctx.mode === "sample"
+        ? `\n\nA DEMONSTRATION PLAN IS LOADED. It is a fictional scenario with sample data, NOT this person's own situation. Never describe it as "your plan" or assume any of it applies to them. You may explain how it was built and offer to work from their own assessment instead.`
+        : `\n\nTHIS PERSON'S ACTIVE RECOVERY PLAN (use it, refer to it specifically):`) +
       `\nSituation: ${plan.crisisType}` +
       `\nLifeBridge Score: ${STATE.score} of 100 (${E.scoreBand(STATE.score||0).label}).` +
       `\nStability by area: ${dims.map(d=>`${d.label} ${d.current}`).join(", ")}.` +
       `\nTop priorities: ${(plan.priorities||[]).map((x,i)=>`${i+1}. ${x.title} (${x.urgency}) because ${x.why}`).join(" ")}` +
       `\nProgress: ${prog.done} of ${prog.total} actions complete.` +
       (next ? `\nNext suggested action: ${next.label}.` : "") +
-      (plan.isSample ? `\nNOTE: this is a demo scenario with sample data.` : "");
+      "";
   }
   const sys = `You are the LifeBridge Recovery Assistant, part of the LifeBridge Recovery Engine. You are warm, practical and brief. Keep replies to 2 to 4 sentences, concrete and kind.
 
@@ -2178,6 +2303,7 @@ async function loadSavedPlan(id, opts){
 
     refreshScore();
     renderPlan(plan, STATE.source === "fallback" ? "fallback" : "ai");
+    renderChatContext();
     if(!opts.silent){ go("roadmap"); toast("Plan loaded."); announce("Saved plan loaded."); }
   }catch(e){ if(!opts.silent) toast(e.message || "Couldn't open that plan."); }
 }
