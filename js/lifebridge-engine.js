@@ -86,17 +86,49 @@ function normalizeWhen(when) {
   return "week";
 }
 
-/* Map whatever label the model used onto one of the six fixed dimensions. */
-function normalizeDimension(name) {
+/* Map whatever label the model used onto one of the six fixed dimensions. Also
+   used as a fallback over an action's own wording when the model omits the
+   field, so the vocabulary has to cover programme names and plain speech, not
+   only the dimension words themselves.
+
+   Word boundaries are not decoration here. Bare substrings quietly mislabel:
+   "discard" contains "card", "parent" contains "rent", "please" contains
+   "lease", "female" contains "fema", "fundamental" contains "mental". Every one
+   of those sent an action to the wrong area of someone's assessment, silently.
+   Short or ambiguous tokens are anchored; long distinctive ones are left open
+   so they still catch inflections like "housing" and "evicted".
+
+   Order matters. Specific programme names sit ahead of the generic terms that
+   would otherwise swallow them. Returns null when nothing matches confidently. */
+function matchDimension(name) {
   const s = String(name || "").toLowerCase();
   if (DIM_IDS.includes(s)) return s;
-  if (/(hous|rent|evict|shelter|home|mortgage|landlord|roof)/.test(s))            return "housing";
-  if (/(financ|money|income|job|employ|debt|benefit|bill|cost|fraud|credit)/.test(s)) return "financial";
-  if (/(food|hunger|meal|nutrition|essential|utilit|groceries)/.test(s))          return "food";
-  if (/(health|medical|mental|emotion|grief|wellbeing|well-being|illness|care|therap)/.test(s)) return "health";
-  if (/(child|school|educat|family|kid|student|depend|parent|caregiv)/.test(s))   return "family";
-  if (/(safe|danger|violence|abuse|threat|legal|protect|security)/.test(s))       return "safety";
-  return "financial";
+
+  // Named food programmes first: "SNAP eligibility" is about food, but
+  // "eligibility" on its own reads as financial.
+  if (/(\bsnap\b|\bwic\b|food bank|food stamp|pantry|school meal|grocer|meals on wheels)/.test(s)) return "food";
+
+  // Specific school contacts before the generic care vocabulary, so "school
+  // counselor" lands on family rather than on health via "counsel".
+  if (/(school counsel|family liaison|school office|\bteacher\b|principal|daycare|childcare)/.test(s)) return "family";
+
+  // Physical safety and the reporting that goes with it, ahead of "legal".
+  if (/(police|theft|stolen|robbed|assault|abuse|violence|danger|threat|unsafe|restraining|\b911\b|\b988\b|crisis line)/.test(s)) return "safety";
+
+  if (/(\bhous|\brent\b|\brental|evict|landlord|mortgage|\blease\b|shelter|\broof\b|repair|contractor|\bfema\b|red cross)/.test(s)) return "housing";
+  if (/(financ|\bmoney\b|income|\bwages?\b|\bjobs?\b|employ|\bdebts?\b|benefit|\bbills?\b|payment|\bbanks?\b|\bcards?\b|\bclaims?\b|insur|fraud|credit|\bloans?\b|survivor|deposit|refund|reimburse)/.test(s)) return "financial";
+  if (/(\bfood\b|hunger|\bmeals?\b|nutrition|essential|utilit|\bwater\b|\bheat\b|electric)/.test(s)) return "food";
+  if (/(health|medical|\bmental\b|emotion|grief|wellbeing|well-being|illness|doctor|hospital|therap|counsel|prescription|mould|\bmold\b)/.test(s)) return "health";
+  if (/(child|\bschool\b|educat|family|\bkids?\b|student|depend|\bparent|caregiv)/.test(s)) return "family";
+  if (/(\bsafe|legal|protect|security|passport|embassy|consulate|court|lawyer|attorney)/.test(s)) return "safety";
+
+  return null;   // no confident match
+}
+
+/* Explicit labels go through here: a dimension must come out, so an
+   unrecognized label falls back to financial rather than vanishing. */
+function normalizeDimension(name) {
+  return matchDimension(name) || "financial";
 }
 
 /* ================================================================= prompt */
@@ -225,12 +257,21 @@ function normalizePlan(raw) {
   }
 
   /* ---- actions ---- */
-  const actions = arr(p.actions).slice(0, 40).map(a => ({
-    when: normalizeWhen(a && a.when),
-    task: str(a && a.task, 300),
-    why: str(a && a.why, 240),
-    dimension: normalizeDimension(a && (a.dimension || a.when)),
-  })).filter(a => a.task);
+  const actions = arr(p.actions).slice(0, 40).map(a => {
+    const task = str(a && a.task, 300);
+    return {
+      when: normalizeWhen(a && a.when),
+      task,
+      why: str(a && a.why, 240),
+      // Model label first, then inference from the wording. Never the time
+      // bucket: "today" matches no dimension, so the old fallback quietly
+      // labelled every unlabelled action financial. If nothing matches
+      // confidently the action stays unlinked and moves no score, which is
+      // better than attributing recovery to an area it did not touch.
+      dimension: (a && a.dimension ? normalizeDimension(a.dimension) : null)
+                 || matchDimension(task + " " + str(a && a.why, 240)),
+    };
+  }).filter(a => a.task);
 
   /* ---- risks to watch ---- */
   const risksToWatch = arr(p.risksToWatch).length
@@ -325,8 +366,13 @@ function recoveryProgress(roadmap) {
   return { done, total, pct: total ? Math.round((done / total) * 100) : 0 };
 }
 
-/* Build the tracked roadmap from a plan. Document-gathering is included as
-   real work, because for most of these situations it genuinely is. */
+/* Build the tracked roadmap from a plan. Document gathering is included as real
+   work, because for most of these situations it genuinely is.
+
+   Those steps carry no dimension on purpose. One certified death certificate
+   unlocks the benefit claim, the landlord conversation and the school at the
+   same time; crediting a single area would overstate it and understate the
+   others. They count toward recovery progress without moving any one score. */
 function seedRoadmapFromPlan(plan) {
   const steps = (plan.actions || []).map(a => ({
     label: a.task,
@@ -340,7 +386,8 @@ function seedRoadmapFromPlan(plan) {
       label: "Gather: " + d,
       detail: "Having this ready speeds up almost every application and appointment.",
       when: "week",
-      dimension: "financial",
+      dimension: null,   // deliberately cross-cutting, see above
+      kind: "document",
       done: false,
     });
   });
@@ -880,7 +927,7 @@ function fallbackPlan(text, crisis) {
 /* Expose explicitly so the dependency is obvious to anyone reading index.html. */
 window.LBEngine = {
   ENGINE_STEPS, DIMENSIONS, DIM_IDS, DIM_BY_ID, WHEN_BUCKETS, SCORE_BANDS,
-  ACRE_SYSTEM, buildPrompt, normalizePlan, normalizeDimension, normalizeWhen,
+  ACRE_SYSTEM, buildPrompt, normalizePlan, normalizeDimension, matchDimension, normalizeWhen,
   scoreBand, clampScore, currentDimensions, lifeBridgeScore, baselineScore,
   recoveryProgress, seedRoadmapFromPlan, nextAction, dimensionProgress,
   DEMO_SCENARIO, DEMO_SCENARIOS, DEMO_BY_ID, demoById,
