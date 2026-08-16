@@ -251,17 +251,27 @@ textarea.navinput:focus{border-color:var(--amber);outline:none}
 }
 .chat-fab:hover{transform:scale(1.06)}
 .chat-panel{
-  position:fixed;right:20px;bottom:88px;z-index:60;width:min(380px,calc(100vw - 40px));
-  height:min(540px,70vh);background:var(--ground-2);border:1px solid var(--line);
+  position:fixed;right:20px;bottom:88px;z-index:60;width:min(400px,calc(100vw - 32px));
+  height:min(600px,76vh);background:var(--ground-2);border:1px solid var(--line);
   border-radius:var(--r-lg);box-shadow:var(--shadow);display:none;flex-direction:column;overflow:hidden;
 }
 .chat-panel.open{display:flex;animation:rise .25s ease both}
-.chat-head{padding:14px 16px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px}
-.chat-head .dot{width:8px;height:8px;border-radius:50%;background:var(--sage)}
-.chat-head strong{font-size:.95rem}
-.chat-head span{font-size:.74rem;color:var(--ink-3)}
-.chat-head button{margin-left:auto;color:var(--ink-3);font-size:1.3rem;line-height:1}
-.chat-body{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:12px}
+.chat-head{padding:12px 14px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px}
+.chat-head .dot{width:8px;height:8px;border-radius:50%;background:var(--sage);flex:none}
+/* min-width:0 is what lets the subtitle actually truncate inside a flex row.
+   Without it a long plan name wrapped and pushed the header to three lines. */
+.chat-head>div{min-width:0;flex:1}
+.chat-head strong{font-size:.92rem;display:block;line-height:1.25}
+.chat-head span{font-size:.72rem;color:var(--ink-3);display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.chat-head button{flex:none;color:var(--ink-3);font-size:1.3rem;line-height:1}
+.chat-body{flex:1;overflow-y:auto;overscroll-behavior:contain;padding:14px;display:flex;flex-direction:column;gap:10px}
+/* The default scrollbar was a wide grey slab down the side of a 380px panel.
+   Thin and dim on the platforms that allow it, untouched where they do not. */
+.chat-body{scrollbar-width:thin;scrollbar-color:var(--line) transparent}
+.chat-body::-webkit-scrollbar{width:6px}
+.chat-body::-webkit-scrollbar-track{background:transparent}
+.chat-body::-webkit-scrollbar-thumb{background:var(--line);border-radius:3px}
+.chat-body::-webkit-scrollbar-thumb:hover{background:var(--ink-3)}
 .msg{max-width:85%;padding:11px 14px;border-radius:14px;font-size:.9rem;line-height:1.5}
 .msg.bot{background:var(--panel);border:1px solid var(--line);align-self:flex-start;border-bottom-left-radius:4px}
 .msg.me{background:var(--amber);color:#22160a;align-self:flex-end;border-bottom-right-radius:4px;font-weight:500}
@@ -437,8 +447,11 @@ body.modal-open{overflow:hidden}
 .mini-btn.danger{border-color:var(--danger);color:var(--danger)}
 
 /* ---------- Assistant suggestions ---------- */
-.chat-suggest{display:flex;gap:6px;flex-wrap:wrap;padding:0 12px 10px}
-.chat-suggest .chip{font-size:.74rem;padding:6px 11px}
+.chat-suggest{display:flex;gap:6px;flex-wrap:wrap;padding:0 14px 10px}
+.chat-suggest[hidden]{display:none}
+.chat-suggest .chip{font-size:.74rem;padding:6px 11px;line-height:1.3}
+.chat-safety{font-size:.7rem;color:var(--ink-3);text-align:center;padding:0 12px 10px;line-height:1.4}
+.chat-safety b{color:var(--ink-2);font-weight:600}
 
 /* The top bar carries Emergency, My plans, the account chip and About. That is
    more than 390px can hold, and letting it overflow put the page into sideways
@@ -802,6 +815,9 @@ body.gated{overflow:hidden}
     <input id="chatInput" placeholder="Ask anything…" onkeydown="if(event.key==='Enter')sendChat()" />
     <button onclick="sendChat()" aria-label="Send"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M4 12l16-8-6 16-3-6-7-2z" stroke="#22160a" stroke-width="2" stroke-linejoin="round"/></svg></button>
   </div>
+  <!-- Carried once, always visible, instead of repeated at the top of every
+       greeting where it scrolls away after the first message. -->
+  <p class="chat-safety">In immediate danger, call <b>911</b>. Crisis support, call or text <b>988</b>.</p>
 </div>
 
 <!-- Emergency modal -->
@@ -1016,10 +1032,50 @@ function loadState(){
   // checking off a step here updates the same plan on the user's other devices.
   const base = { score:null, activeCrisis:null, roadmap:[], lastPlan:null,
                  situationText:"", source:"ai", cloudPlanId:null, isSample:false };
-  try{ const s = JSON.parse(localStorage.getItem(STORE_KEY)); if(s) return Object.assign(base, s); }catch(e){}
+  try{
+    const s = JSON.parse(localStorage.getItem(STORE_KEY));
+    // A demo left over from a previous visit is discarded rather than restored.
+    if(s && s.isSample) return base;
+    if(s) return Object.assign(base, s);
+  }catch(e){}
   return base;
 }
-function saveState(){ try{ localStorage.setItem(STORE_KEY, JSON.stringify(STATE)); }catch(e){} }
+/* A demo is a walkthrough, not the person's data, so it never touches disk.
+
+   Skipping the write rather than writing a cleaned copy is deliberate: it
+   leaves whatever was last saved intact, so someone who looks at a demo and
+   reloads gets their own plan back rather than an empty screen. Before this,
+   a demo survived a reload and the app went on calling a fictional family's
+   situation "your LifeBridge Score" until the person found the Clear button. */
+function saveState(){
+  if(STATE.isSample) return;
+  try{ localStorage.setItem(STORE_KEY, JSON.stringify(STATE)); }catch(e){}
+}
+
+/* Belt and braces for anything already sitting in storage from before the
+   rule above existed. */
+function dropStoredSample(){
+  try{
+    const s = JSON.parse(localStorage.getItem(STORE_KEY));
+    if(s && s.isSample) localStorage.removeItem(STORE_KEY);
+  }catch(e){}
+}
+
+/* Leaving a demo behind. Called wherever the person starts something of their
+   own, because the alternative is the assistant and the home screen still
+   discussing a scenario they have visibly moved on from. */
+function dropDemo(){
+  if(!STATE.isSample) return false;
+  STATE.isSample = false;
+  STATE.lastPlan = null;
+  STATE.roadmap  = [];
+  STATE.score    = null;
+  STATE.situationText = "";
+  saveState();
+  updateScoreUI();
+  renderChatContext();
+  return true;
+}
 
 /* ---------- Screen router ---------- */
 function go(name, opts){
@@ -1180,6 +1236,9 @@ function openPillar(id){
 /* pick a crisis → prefill navigator */
 function startCrisis(id){
   const c = flatCrises[id];
+  // Choosing a situation of your own ends the demo. Otherwise the home screen
+  // and the assistant carry on discussing a scenario you have plainly left.
+  dropDemo();
   STATE.activeCrisis = id; saveState();
   document.getElementById("navTitle").textContent = c.name;
   document.getElementById("navHint").textContent = "Add anything specific to your situation, who's affected, what's most urgent, deadlines you're up against. LifeBridge tailors the plan to what you write.";
@@ -1372,6 +1431,7 @@ function resetNavigator(){
 }
 
 function startFresh(){
+  dropDemo();
   STATE.activeCrisis = null;
   STATE.isSample = false;
   saveState();
@@ -2017,6 +2077,7 @@ function renderResList(places, withHotlines){
 /* ---------- Chatbot ---------- */
 let chatHistory=[];
 let chatContextKey = null;   // what the current greeting was written for
+let chatSpoke = false;       // has the person said anything since that greeting
 
 /* The assistant answers from whatever plan is loaded, which is useful, but it
    was claiming "I can see your recovery plan" regardless of whether that plan
@@ -2030,12 +2091,16 @@ function chatContext(){
   return { mode:"plan", plan:p, label, key:"plan:"+label+":"+(STATE.cloudPlanId||"local") };
 }
 
+/* Short on purpose. These land in a panel a few hundred pixels tall, and a
+   paragraph of preamble pushed the conversation off the screen before it had
+   started. The 911 and 988 line is carried once, in the header, rather than
+   repeated at the top of every greeting. */
 function chatGreeting(ctx){
   if(ctx.mode === "sample")
-    return `You are looking at the ${ctx.label} demo, which uses sample data rather than your own situation. Ask me anything about how the plan was built, or start your own assessment and I will work from that instead. If you are ever in immediate danger, call 911 or 988 right away.`;
+    return `This is the ${ctx.label} demo, built from sample data rather than your situation. Ask me how it was put together, or start your own assessment any time.`;
   if(ctx.mode === "plan")
-    return `I can see your ${ctx.label} plan. Ask me about any step in it, why something is a priority, or what to do first. If you are ever in immediate danger, call 911 or 988 right away.`;
-  return "I am here to help you think through whatever you are facing. Tell me what is going on, or start an assessment and I can walk you through the plan. If you are ever in immediate danger, call 911 or 988 right away.";
+    return `I can see your ${ctx.label} plan. Ask me about any step, or what to do first.`;
+  return "Tell me what you are facing and I will help you think it through.";
 }
 
 /* Keeps the panel header truthful at all times, so the person never has to
@@ -2067,6 +2132,8 @@ function toggleChat(){
     if(chatHistory.length) botSay("Context changed. " + chatGreeting(ctx));
     else                   botSay(chatGreeting(ctx));
     chatContextKey = ctx.key;
+    // New plan, new starting points. The prompts are useful again here.
+    chatSpoke = false;
   }
   renderChatContext();
   document.getElementById("chatInput").focus();
@@ -2078,25 +2145,31 @@ function renderChatSuggestions(){
   const el = document.getElementById("chatSuggest");
   if(!el) return;
   const ctx = chatContext();
+
+  /* Suggestions are a way in, not a permanent menu. Four long questions were
+     taking almost a third of the panel and squeezing the conversation into a
+     strip smaller than the prompts above it. So they show while the person has
+     not said anything yet, and step aside the moment they do. Changing plan
+     brings them back, because that is when a fresh way in is useful again. */
+  if(chatSpoke){ el.hidden = true; el.innerHTML = ""; return; }
+
   let qs;
   if(ctx.mode === "none"){
-    qs = ["What can LifeBridge do?", "I am not sure where to start", "How is the score worked out?"];
+    qs = ["What can you help with?", "Where do I start?", "How is the score worked out?"];
   }else if(ctx.mode === "sample"){
-    qs = ["How was this demo plan built?", "Why is housing the top priority here?", "How would this differ for me?", "How is the score worked out?"];
+    qs = ["How was this built?", "Why housing first?", "How would mine differ?"];
   }else{
     const p = ctx.plan;
-    const next = E.nextAction(STATE.roadmap);
-    const topPrio = (p.priorities||[])[0];
-    qs = ["What should I do first?"];
-    if(topPrio) qs.push(`Why is ${topPrio.title.toLowerCase()} a priority?`);
-    qs.push("What documents might I need?");
-    if(next) qs.push("What if I cannot complete a step?");
-    qs.push("Who can help me nearby?");
-    if(E.isReassessed(p)) qs.push("What has changed since my first assessment?");
-    if(STATE.roadmap.some(s=>s.done)) qs.push("Has my situation improved?");
-    if(STATE.roadmap.filter(s=>s.done).length>=2 && !E.isReassessed(p)) qs.unshift("Should I update my situation?");
+    const done = STATE.roadmap.filter(s=>s.done).length;
+    qs = [];
+    if(done>=2 && !E.isReassessed(p)) qs.push("Should I update my situation?");
+    qs.push("What should I do first?");
+    if(E.isReassessed(p)) qs.push("What has changed?");
+    qs.push("What documents do I need?", "Who can help nearby?");
   }
-  el.innerHTML = qs.slice(0,4).map(q=>
+  // Three is what fits on two short rows at this width without crowding.
+  el.hidden = false;
+  el.innerHTML = qs.slice(0,3).map(q=>
     `<button class="chip" onclick="askChat(this.textContent)">${esc(q)}</button>`).join("");
 }
 function askChat(q){
@@ -2117,6 +2190,8 @@ async function sendChat(){
   const b=document.getElementById("chatBody");
   b.innerHTML += `<div class="msg me">${esc(text)}</div>`;
   chatHistory.push({role:"me",t:text});
+  chatSpoke = true;
+  renderChatSuggestions();   // the prompts step aside now the conversation is real
   b.innerHTML += `<div class="msg bot typing" id="typing">thinking…</div>`;
   b.scrollTop=b.scrollHeight;
   const ctx = chatContext();
@@ -2566,6 +2641,10 @@ function renderSaveButton(){
   const slot = document.getElementById("savePlanSlot");
   if(!slot) return;
   if(!cloudOn()){ slot.innerHTML = ""; return; }
+  // A demo is a fictional family's situation. Offering to file it in someone's
+  // account alongside their real plans is the same leak as letting it survive
+  // a reload, just slower to notice.
+  if(STATE.isSample){ slot.innerHTML = ""; return; }
   if(STATE.cloudPlanId){
     slot.innerHTML = `<span class="status live" style="padding:9px 14px"><span class="dot"></span>Saved to your account</span>`;
     return;
@@ -2575,6 +2654,7 @@ function renderSaveButton(){
 
 async function savePlanToAccount(){
   if(!STATE.lastPlan){ toast("Build a plan first."); return; }
+  if(STATE.isSample){ toast("This is a demo. Start your own assessment to save a plan."); return; }
   if(!cloudOn()){ toast(cloudMsg()); return; }
   if(!CLOUD_USER){ pendingSave = true; openAuth(); return; }   // save resumes after sign-in
 
@@ -2831,7 +2911,9 @@ function updateResSub(){
 }
 
 function init(){
+  dropStoredSample();   // clears a demo left in storage by an earlier build
   renderPillars();
+  renderChatContext();  // so the header never opens showing a stale plan name
   renderNavChips();
   renderHowSteps();
   renderAccount();      // no-op until the cloud module reports in
