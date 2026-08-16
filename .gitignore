@@ -28,3 +28,6 @@ desktop.ini
 .vscode/
 .idea/
 *.swp
+
+# scratch, safe to delete
+_to_delete/
