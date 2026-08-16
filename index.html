@@ -250,20 +250,24 @@ textarea.navinput:focus{border-color:var(--amber);outline:none}
   box-shadow:0 12px 30px -8px rgba(244,168,74,.6);transition:transform .16s;
 }
 .chat-fab:hover{transform:scale(1.06)}
+/* [hidden] alone loses to display:flex above, so it is stated explicitly. */
+.chat-fab[hidden]{display:none}
 .chat-panel{
   position:fixed;right:20px;bottom:88px;z-index:60;width:min(400px,calc(100vw - 32px));
   height:min(600px,76vh);background:var(--ground-2);border:1px solid var(--line);
   border-radius:var(--r-lg);box-shadow:var(--shadow);display:none;flex-direction:column;overflow:hidden;
 }
 .chat-panel.open{display:flex;animation:rise .25s ease both}
-.chat-head{padding:12px 14px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px}
-.chat-head .dot{width:8px;height:8px;border-radius:50%;background:var(--sage);flex:none}
+/* Two tight lines. The title used to be a full-size heading with a second
+   line under it, which is a lot of chrome to spend on a panel this small. */
+.chat-head{padding:9px 12px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:9px}
+.chat-head .dot{width:7px;height:7px;border-radius:50%;background:var(--sage);flex:none}
 /* min-width:0 is what lets the subtitle actually truncate inside a flex row.
    Without it a long plan name wrapped and pushed the header to three lines. */
 .chat-head>div{min-width:0;flex:1}
-.chat-head strong{font-size:.92rem;display:block;line-height:1.25}
-.chat-head span{font-size:.72rem;color:var(--ink-3);display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.chat-head button{flex:none;color:var(--ink-3);font-size:1.3rem;line-height:1}
+.chat-head strong{font-size:.82rem;display:block;line-height:1.2}
+.chat-head span{font-size:.68rem;color:var(--ink-3);display:block;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.chat-head button{flex:none;color:var(--ink-3);font-size:1.2rem;line-height:1;padding:0 2px}
 .chat-body{flex:1;overflow-y:auto;overscroll-behavior:contain;padding:14px;display:flex;flex-direction:column;gap:10px}
 /* The default scrollbar was a wide grey slab down the side of a 380px panel.
    Thin and dim on the platforms that allow it, untouched where they do not. */
@@ -806,7 +810,7 @@ body.gated{overflow:hidden}
 <div class="chat-panel" id="chatPanel">
   <div class="chat-head">
     <span class="dot"></span>
-    <div><strong>LifeBridge Recovery Assistant</strong><br><span id="chatSub">Part of the Recovery Engine</span></div>
+    <div><strong>Recovery Assistant</strong><span id="chatSub">Part of the Recovery Engine</span></div>
     <button onclick="toggleChat()" aria-label="Close">×</button>
   </div>
   <div class="chat-body" id="chatBody"></div>
@@ -1074,6 +1078,7 @@ function dropDemo(){
   saveState();
   updateScoreUI();
   renderChatContext();
+  updateChatAffordance();
   return true;
 }
 
@@ -1085,6 +1090,8 @@ function go(name, opts){
   if(name==="resources"){ initMap(); updateResSub(); }
   if(name==="roadmap") renderRoadmap();
   if(name==="plans") renderPlans();
+  currentScreen = name;
+  updateChatAffordance();
 }
 
 /* The home screen used to present whatever was left in localStorage as "your
@@ -1791,6 +1798,11 @@ function renderPlan(p, source){
     <p class="plan-safety">Decision support to help you organize and act. Not legal, medical, financial or emergency advice, and not an eligibility determination. In an emergency call 911. For crisis support call or text 988. <a onclick="openAbout()" role="button" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openAbout()}">More</a></p>
   `;
   renderSaveButton();
+  // A plan now exists on this screen. Refresh both what the assistant says it
+  // is working from and whether it is offered at all, so neither can be stale
+  // by the time someone opens the panel.
+  renderChatContext();
+  updateChatAffordance();
 }
 
 function openScoreInfo(){
@@ -2109,16 +2121,50 @@ function renderChatContext(){
   const sub = document.getElementById("chatSub");
   if(sub){
     const ctx = chatContext();
+    // No "Working from:" prefix. The panel only opens over a plan now, so the
+    // name alone is unambiguous and the words were costing a line.
     sub.textContent =
-      ctx.mode === "sample" ? `Demo: ${ctx.label} (sample data)` :
-      ctx.mode === "plan"   ? `Working from: ${ctx.label}` :
+      ctx.mode === "sample" ? `${ctx.label} · demo, sample data` :
+      ctx.mode === "plan"   ? ctx.label :
                               "No plan yet";
   }
   renderChatSuggestions();
 }
 
+/* Where the assistant belongs.
+
+   It answers questions about a plan, so it has nothing to say until there is
+   one, and no business appearing over the opening screen. Worse, it announced
+   "Working from: <plan>" there, naming something the person had not built in
+   this session and was not looking at. So the bubble appears on the two
+   screens where a plan is actually in front of them, and nowhere else. */
+const CHAT_SCREENS = ["navigator", "roadmap"];
+let currentScreen = "home";
+
+function chatAllowed(){
+  return !!STATE.lastPlan && CHAT_SCREENS.includes(currentScreen);
+}
+
+function updateChatAffordance(){
+  const fab = document.getElementById("chatFab");
+  const panel = document.getElementById("chatPanel");
+  if(!fab || !panel) return;
+  const allowed = chatAllowed();
+  fab.hidden = !allowed;
+  // Leaving the plan closes the panel with it, rather than leaving it floating
+  // over a screen it is no longer talking about.
+  if(!allowed && panel.classList.contains("open")){
+    panel.classList.remove("open");
+    fab.setAttribute("aria-expanded", "false");
+  }
+}
+
 function toggleChat(){
   const panel = document.getElementById("chatPanel");
+  // Closing always works. Opening is refused where the assistant has nothing
+  // to talk about, so the rule holds even if something calls this directly
+  // rather than going through the button.
+  if(!panel.classList.contains("open") && !chatAllowed()) return;
   const open = panel.classList.toggle("open");
   const fab = document.getElementById("chatFab");
   if(fab) fab.setAttribute("aria-expanded", String(open));
@@ -2914,6 +2960,7 @@ function init(){
   dropStoredSample();   // clears a demo left in storage by an earlier build
   renderPillars();
   renderChatContext();  // so the header never opens showing a stale plan name
+  updateChatAffordance();  // and the bubble is not sitting over the home screen
   renderNavChips();
   renderHowSteps();
   renderAccount();      // no-op until the cloud module reports in
